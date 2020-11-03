@@ -25,10 +25,10 @@ void qsort(int *p, int l, int r)
         int temp = p[l];
         while (l != r)
         {
-            while (l < r && p[r] > temp)
+            while (l < r && p[r] >= temp)
                 r--;
             p[l] = p[r];
-            while (l < r && p[l] < temp)
+            while (l < r && p[l] <= temp)
                 l++;
             p[r] = p[l];
         }

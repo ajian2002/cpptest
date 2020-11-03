@@ -6,5 +6,5 @@ int main()
     FILE *cin, *cout;
     cin = fopen("cin.txt", "r");
     cout = fopen("cout.txt", "w");
-    ![ww](asdasda)
+    // ![ww](asdasda)
 }

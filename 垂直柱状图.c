@@ -8,7 +8,7 @@ int main()
     int i, s, len, min, max;
     min = 1000;
     max = 0;
-    
+
     char a[408], b[303], c[202], d[101];
     gets(a);
     gets(b);
@@ -44,5 +44,6 @@ int main()
     }
     for (i = 0; i < 26; i++)
         printf("%c ", sp[i]);
+    getchar();
     return 0;
 }

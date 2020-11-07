@@ -1,5 +1,6 @@
 #include <stdio.h>
-
+#include <stdio.h>
+#define int mm
 int main()
 {
     char szDig[] = "10,22m,Z86,,880;555:666.";
@@ -9,4 +10,5 @@ int main()
         dwIdx += dwSize;
         printf("dwIdx=%d, dwSize=%d, dwVal=%d\n", dwIdx, dwSize, dwVal);
     }
+    return 0;
 }

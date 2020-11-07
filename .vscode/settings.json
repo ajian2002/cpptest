@@ -1,5 +1,11 @@
 {
     "editor.mouseWheelZoom": true,
     "files.autoSave": "onWindowChange",
-    "C_Cpp.errorSquiggles": "Disabled"
+    "C_Cpp.errorSquiggles": "Disabled",
+    "editor.snippetSuggestions": "bottom",
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true,
+    "python.formatting.provider": "yapf"
 }

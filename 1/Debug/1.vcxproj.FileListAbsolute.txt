@@ -1,2 +1,0 @@
-D:\software\onedrive\文档\devc++ 源码练习\1\Debug\1.exe
-D:\software\onedrive\文档\devc++ 源码练习\1\Debug\1.pdb

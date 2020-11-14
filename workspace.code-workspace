@@ -6,6 +6,10 @@
   ],
   "settings": {
     "editor.snippetSuggestions": "bottom",
-    "editor.suggest.snippetsPreventQuickSuggestions": false
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "terminal.integrated.copyOnSelection": true,
+    "code-runner.runInTerminal": true,
+    "editor.accessibilitySupport": "on",
+    "editor.renameOnType": true
   }
 }

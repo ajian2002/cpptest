@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#define NUM 50
+#define NUM 35
 #define KEY 4
 int low_bound(int *begin, int *end, int key); //查找有序区间中第一个大于或等于某给定值的元素的位置
 int upper_bound(int *begin, int *end, int key);
@@ -44,16 +44,21 @@ int low_bound(int *begin, int *end, int key) //zuo
     {
         int len = (e - b);
         // printf(" %d", len);
-        int *mid = (b) + (len / 2);
+        int *midd = (b) + (len / 2);
         // printf("   %d   ", *mid);
         //printf("\n%p  ", mid);
-        if (key < *mid)
-            e = mid - 1;
+        if (key < *midd)
+            e = midd - 1;
+        else if (key == *midd)
+        {
 
-        else if (key == *mid)
-            return (mid - bbee);
+            if (key > *(midd - 1))
+                return (midd - bbee);
+            else
+                e = midd - 1;
+        }
         else
-            b = mid + 1;
+            b = midd + 1;
     }
 }
 int upper_bound(int *begin, int *end, int key) //you
@@ -70,10 +75,8 @@ int upper_bound(int *begin, int *end, int key) //you
         //printf("   %d   ", *mid);
         //printf("\n%p  ", mid);
         if (key < *mid)
-        {
             ee = mid - 1;
-            //return 1;
-        }
+        //return 1;
         else if (key == *mid)
         {
             sum++;
@@ -82,9 +85,8 @@ int upper_bound(int *begin, int *end, int key) //you
             //return (mid - bb - 1);
         }
         else
-        {
             bb = mid + 1;
-        }
+
         //return -1;
         //if (sum>0&&)
     }

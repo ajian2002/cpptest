@@ -1,10 +1,11 @@
 #include <stdio.h> //大至小
+#define NUM 1000
 void qsort(int *p, int l, int r);
 int main()
 {
-    int a[20] = {0};
+    int a[NUM] = {0};
     int i = 0, n = 0;
-    printf("输入数目个数");
+    //printf("输入数目个数");
     scanf("%d", &n);
     for (i = 0; i < n; i++)
         scanf("%d", &a[i]);
@@ -27,9 +28,11 @@ void qsort(int *p, int l, int r)
         {
             while (l < r && p[r] >= temp)
                 r--;
+            // if (l != r)
             p[l] = p[r];
             while (l < r && p[l] <= temp)
                 l++;
+            //if (l != r)
             p[r] = p[l];
         }
         if (r == l)

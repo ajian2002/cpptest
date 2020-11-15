@@ -51,9 +51,9 @@ int main()
 {
     srand((unsigned int)time(NULL));
     int a[NUM] = {0};
-    int i = 0, n = 0;
+    int i = 0, n = 10;
     //printf("输入数目个数");
-    scanf("%d", &n);
+    // scanf("%d", &n);
     for (i = 0; i < n; i++)
         scanf("%d", &a[i]);
 

@@ -35,15 +35,18 @@ int main(int argc, char *argv[])
              'q',
              44}};
     struct A *de;
-
     de = &C[0];
+    printf("%s", de->s);
+    struct B *sfx = &C2[0];
+    printf("%d\n", sfx->xcc);
+
     char chars[2];
     int x, y;
-    int *sfx = &x;
 
-    printf("%p %p %p\n", &x, &chars[0], sfx + 2);
-    printf("%p %p \n", &C[0], &C[1];
-    printf("%p %p", de, de + 1);
+    //sfx->
+    //  printf("%p %p %p\n", &x, &chars[0], sfx + 2);
+    // printf("%p %p \n", &C[0], &C[1];
+    //printf("%p %p", de, de + 1);
 
     //return 0;
 }

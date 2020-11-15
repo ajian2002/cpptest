@@ -9,24 +9,26 @@ void qsort(int *p, int l, int r);
 int main()
 {
 
-    int arr[NUM];
+    int arr[50];
 
     srand((unsigned)time(NULL));
-    for (int i = 0; i < NUM; i++)
+    int n;
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++)
         arr[i] = rand() % 10;
     // for (int i = 0; i < rand() % 10; i++)
     //arr[i] = KEY;
 
     // arr[3] = KEY;
 
-    qsort(arr, 0, NUM - 1);
+    qsort(arr, 0, n - 1);
     int s = -1;
     printf("数组 ");
-    while (++s != NUM)
+    while (++s != n)
         printf("%2d ", arr[s]);
     s = -1;
     printf("\n下标 ");
-    while (++s != NUM)
+    while (++s != n)
         printf("%2d ", s);
 
     int l = low_bound(&arr[0], &arr[NUM], KEY);

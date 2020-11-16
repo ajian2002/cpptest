@@ -1,2 +1,7 @@
-
+*
 .vscode/
+*.exe
+!*.c
+!*.py
+!leecode/
+!/WeeklyTasks

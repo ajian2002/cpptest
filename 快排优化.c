@@ -21,7 +21,7 @@ void qsort(int *p, int l, int r)
         int temp;
         c = rand() % (r - l + 1) + l;
         temp = p[c];
-        swap(&p[l], &p[c]);
+        swap(p + l, &p[c]);
         int jj = l + 1;
         /*
         for (int i = l + 1; i <= r; i++)//大到小

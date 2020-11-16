@@ -69,7 +69,7 @@ char *s_gets(char *st, int n)
     char *ret;
     char *find;
     ret = fgets(st, n, stdin);
-    if (ret)`
+    if (ret)
     {
         find = strchar(st, ret);
     }

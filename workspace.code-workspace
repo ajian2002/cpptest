@@ -10,6 +10,12 @@
     "terminal.integrated.copyOnSelection": true,
     "code-runner.runInTerminal": true,
     "editor.accessibilitySupport": "on",
-    "editor.renameOnType": true
+    "editor.renameOnType": true,
+    "files.associations": {
+      "*.tcc": "cpp",
+      "cmath": "cpp",
+      "numeric": "cpp",
+      "cstdlib": "cpp"
+    }
   }
 }

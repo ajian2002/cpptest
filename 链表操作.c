@@ -31,9 +31,9 @@ int find(struct Node **linkList, int data);
 // 整表创建
 void createList(int nums[], int size, struct Node **newlinkList);
 // 整表删除
-int removeList(struct Node *newlinkList);
+int removeList(struct Node **newlinkList);
 // 链表逆置
-void reverse(struct Node *linkList);
+void reverse(struct Node **linkList);
 //查看链表数据
 void seelink(struct Node *link);
 
@@ -75,19 +75,28 @@ int main()
     seelink(*linkList);
     //整表创建
     //printf("1");
-    struct Node **newlinkList;
+    struct Node A;
+    struct Node *nesw = &A;
+    struct Node **newlinkList = &nesw;
 
     // initList(newlinkList); printf("1");
 
     int nums[6] = {11, 12, 13, 14, 15};
     //printf("1");
-
     createList(nums, 5, newlinkList);
     printf("新");
     seelink(*newlinkList);
 
-    //printf("删除表%d", error = removeList(newlinkList));
-    // void reverse(struct Node *linkList);
+    printf("删除表%d\n", error = removeList(newlinkList));
+    printf("新");
+    seelink(*newlinkList);
+    printf("  原");
+    seelink(*linkList);
+    //printf(" ");
+    reverse(linkList);
+
+    printf("逆置");
+    seelink(*linkList);
 }
 
 // 创建列表
@@ -269,59 +278,80 @@ int find(struct Node **linkList, int data)
 // 整表创建
 void createList(int nums[], int size, struct Node **newlinkList)
 {
-
     struct Node *current = (struct Node *)malloc(sizeof(struct Node));
     *newlinkList = current;
-    printf("1");
-    //
-    for (int i = 1; i <= size; i++)
+    for (int i = 0; i < size; i++)
     {
-        struct Node node = (struct Node)malloc(sizeof(struct Node));
-        current->data = nums[i - 1];
-
-        //  printf("%d", i);
-        if (i != size)
+        current->data = nums[i];
+        if (i != size - 1)
         {
-            current->next = node;
-            *current = node;
+            struct Node *pordata = (struct Node *)malloc(sizeof(struct Node));
+            current->next = pordata;
+            current = current->next;
         }
         else
         {
             current->next = NULL;
         }
+        // current = NULL;
     }
-
-    // return newlinkList;
 }
 // 整表删除
-int removeList(struct Node *newlinkList)
+int removeList(struct Node **newlinkList)
 {
-    struct Node *current = newlinkList;
-    while (current != NULL)
+    struct Node *current, *pordata;
+    current = *newlinkList;
+    while (current->next != NULL)
     {
-        if ((current->next) != NULL)
-        {
-            struct Node *current2 = current->next;
-            free(current);
-            struct Node *current = current2;
-        }
-        else
-        {
-            free(current);
-            return 1;
-        }
+        struct Node *pordata;
+        pordata = current;
+        current = current->next;
+        free(pordata);
     }
-    return 0;
+    //printf("1");
+    free(pordata);
+    *newlinkList = NULL;
+    return 1;
 }
 // 链表逆置
-void reverse(struct Node *linkList);
+void reverse(struct Node **linkList)
+{
+    struct Node *cur = *linkList;
+    int i = 1;
+    struct Node *pro;
+    struct Node *xx;
+
+    xx = cur->next;
+    cur->next = NULL;
+    pro = cur;
+    //  printf("%d", (*cur).data); //1
+    cur = xx;
+    //  xx = cur->next;
+    while (cur->next != NULL)
+    {
+
+        i++;
+        // printf("%d ", i);
+
+        xx = cur->next;
+        cur->next = pro;
+
+        pro = cur;
+        // printf("%d", (*cur).data);
+        cur = xx;
+    }
+
+    cur->next = pro;
+    *linkList = cur;
+    //printf("%d %d %d", (*cur).data, (*(cur->next)).data, (*((cur->next)->next)).data); //1
+}
 //查看链表数据
 void seelink(struct Node *linkList)
 {
     struct Node *prev = linkList;
     if (prev != NULL)
-    {
 
+    {
         printf("链表:%d ", prev->data);
         while (prev->next != NULL)
         {
@@ -331,5 +361,7 @@ void seelink(struct Node *linkList)
             //  printf("1 ");
         }
     }
+    else
+        printf("表空");
     printf("\n");
 }

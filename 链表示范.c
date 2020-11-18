@@ -37,7 +37,7 @@ void reverse(struct Node *linkList);
 int main()
 {
     struct Node *linkList;
-    printf("initList:%d", initList(&linkList));
+    printf("initList:%d\n", initList(&linkList));
     struct Node *node;
     printf("length:%d\n", getLength(linkList));
     printf("tailInsert:%d\n", tailInsert(linkList));

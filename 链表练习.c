@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #define SIZE 256
 /*typedef struct LINKTABLE
 {
@@ -21,19 +22,54 @@ struct B
 
 struct film
 {
-    char title[SIZE];
+    char title;
     int paper;
     struct film *next;
-}
+};
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-
     struct film *head = NULL;
-    struct film *a, *b;
-    char tit[SIZE];
-    while (s_gets)
+    struct film *preNode, *current;
+    char get[SIZE];
+    int i = 0;
+    while (scanf("%c", &get[i]) && get[i] != '\n')
+    {
+        //printf("%d ", i);
+        //创建节点
+        current = (struct film *)malloc(sizeof(struct film));
+        if (head == NULL)   //第一
+            head = current; //头指当前
+        else
+            preNode->next = current; //上一个尾指过来
+        current->next = NULL;        //这个尾设置空
+        current->title = get[i++];
+
+        preNode = current; //在最后面传递下去
+    }
+    if (head == NULL)
+    {
+        printf("0");
+        return 0;
+    }
+    current = head;
+    while (current != NULL)
+    {
+        //重新指向头
+        printf("%c", current->title);
+        current = current->next;
+    }
+    current = head;
+
+    while (head != NULL)
+    {
+        current = head;
+        head = current->next;
+        free(current);
+        //printf("%d", i++);
+    }
+
+    printf("1");
     /* struct A C[2] =
         {
             {"sfdsd", //char [8]
@@ -63,14 +99,4 @@ main(int argc, char *argv[])
     //printf("%p %p", de, de + 1);
 
     //return 0;
-}
-char *s_gets(char *st, int n)
-{
-    char *ret;
-    char *find;
-    ret = fgets(st, n, stdin);
-    if (ret)
-    {
-        find = strchar(st, ret);
-    }
 }

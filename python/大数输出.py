@@ -1,0 +1,10 @@
+import math
+a1 = int(input())
+a2 = int(input())
+a3 = int(input())
+max = max(a1, a2, a3)
+min = min(a1, a2, a3)
+sum = sum([a1, a2, a3])
+print(max)
+print(sum-max-min)
+print(min)

@@ -365,3 +365,7 @@ void seelink(struct Node *linkList)
         printf("表空");
     printf("\n");
 }
+
+{
+    
+}

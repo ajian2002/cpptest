@@ -2,8 +2,8 @@
 int main(int argc, char *argv[])
 {
 
-    int a = 1011b;
-    int b = 1101b;
-    int c = a ^ b;
-    printf("%d", c)
+    int a = 1011;
+    int b = 1101;
+    int c = a /b;
+    printf("%d", c);
 }

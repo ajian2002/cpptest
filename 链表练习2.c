@@ -16,17 +16,15 @@ int main()
     int arr[size];
     int i = 0;
     while (s_gets(arr, sizeof(arr)) != NULL)
-    {   
+    {
         current = (struct item *)malloc(sizeof(struct item));
-        if(*(current)==NULL)
-        return -1;
+        if (*(current) == NULL)
+            return -1;
         if (head == NULL)
             head = current;
         else
             preNode->next = current;
         current->next = NULL;
-
-
 
         preNode = current;
     }

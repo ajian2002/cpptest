@@ -25,6 +25,7 @@
             if (l == r)                       \
                 p[r] = temp;
 }
+<<<<<<< HEAD
 }*/
 int main()
 {
@@ -37,5 +38,15 @@ int main()
     {
         printf("1");
     }
+    == == == =
+}
+int main()
+{
+    int a[NUM] = {0};
+    QSORT(a, 0, NUM - 1);
+    for (int i = 0; i < NUM; i++)
+        printf("%d ", a[i]);
+
+>>>>>>> origin/main
     return 0;
 }

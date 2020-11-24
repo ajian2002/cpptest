@@ -27,7 +27,7 @@ int main()
   //-10
   // printf("%d\n", printf("XiyouLinux\n"));
   // printf("%d\n", printf("Xiyou\0Linux\n"));
-  int a[2][2];
+  int a[2][2] = {0};
   printf("%p %p %p\n", &a, &a[0], &a[0][0]);
   printf("%p %p %p\n", &a + 1, &a[0] + 1, &a[0][0] + 1);
   char x[] = "LinuxGroup\t\106F\bamily";

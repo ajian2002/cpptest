@@ -5,6 +5,7 @@
 /*#define MALLOC(TYPE, N) \
     ((TYPE *)malloc((N) * sizeof(TYPE)))
 */
+/*
 #define QSORT(*p, l, r)                       \
     {                                         \
         if (l < r)                            \
@@ -24,13 +25,17 @@
             if (l == r)                       \
                 p[r] = temp;
 }
-}
+}*/
 int main()
 {
-    int a[NUM] = {0};
-    QSORT(a, 0, NUM - 1);
-    for (int i = 0; i < NUM; i++)
-        printf("%d ", a[i]);
-
+    int a = 1;
+    double temp = 1.2;
+    void *p = &a;
+    void *q = &temp;
+    //    printf("%d,%f", *(int *)(p), *(double *)(q));
+    while (--a)
+    {
+        printf("1");
+    }
     return 0;
 }

@@ -9,7 +9,8 @@ int main()
     char b[50];
     int c[26] = {0};
     scanf("%s", b);
-    int i,z, len;
+    int i,
+        z, len;
     len = strlen(b);
     for (i = 0; i < len; i++)
         b[i] = toupper(b[i]);

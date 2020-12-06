@@ -1,0 +1,10 @@
+*
+!*.c
+!*.py
+!README.md
+!.gitignore
+!*.txt
+!*.cpp
+!leecode/
+!luogu/
+!python/

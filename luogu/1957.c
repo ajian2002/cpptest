@@ -3,16 +3,22 @@
 int getci(int s1, int s2, int sum)
 {
     int wei = 2;
+    if (s1 == 0)
+        wei++;
     if (s1 < 0)
     {
         wei++;
         s1 = -1 * s1;
     }
+    if (s2 == 0)
+        wei++;
     if (s2 < 0)
     {
         wei++;
         s2 = -1 * s2;
     }
+    if (sum == 0)
+        wei++;
     if (sum < 0)
     {
         wei++;
@@ -56,6 +62,7 @@ int main()
             int wei = 2;
             wei = getci(s1, s2, sum);
             printf("%d\n", wei);
+            tt = fu;
         }
         else if (fu == 'b')
         {
@@ -66,6 +73,7 @@ int main()
             int wei = 2;
             wei = getci(s1, s2, sum);
             printf("%d\n", wei);
+            tt = fu;
         }
         else if (fu == 'c')
         {
@@ -76,6 +84,7 @@ int main()
             int wei = 2;
             wei = getci(s1, s2, sum);
             printf("%d\n", wei);
+            tt = fu;
         }
         else
         {
@@ -113,7 +122,6 @@ int main()
                 printf("%d\n", wei);
             }
         }
-        tt = fu;
         if (k != n)
         {
             if (getchar() == '\r')

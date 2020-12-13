@@ -3,8 +3,9 @@
 !*.py
 !README.md
 !.gitignore
-!*.txt
 !*.cpp
-!leecode/
-!luogu/
-!python/
+!/leecode/*.c
+!/leecode/*.cpp
+!/luogu/*.c
+!/luogu/*.cpp
+!/python/*.py

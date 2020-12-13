@@ -1,19 +1,20 @@
-a, b, c = map(int, input().split(' '))
-delt = pow(b*b-4*a*c, 0.5)
+a, b, c = map(int, input().split())
 if a == 0:
     if b == 0:
-        print("NO")
+        print("No")
     else:
         x = -c*1.000/b
-        print("%.2f" % x)
+        print("%0.2f" % x)
 else:
-    if delt == 0:
-        x = -b*1.00/2/a
-        print("%.2f" % x)
-    elif delt < 0:
-        print("NO")
-    else:
-        x2 = (delt-b)*1.00/2/a
-        print("%.2f" % x2, end=" ")
-        x1 = (-b-delt)*1.00/2/a
+    delt = (b**2-4*a*c)
+    if delt < 0:
+        print("No")
+    elif delt > 0:
+        delt = delt**(1/2)
+        x2 = (delt-b)*1.00/(2*a)
+        print("%0.2f" % x2, end=" ")
+        x1 = (-b-delt)*1.00/(2*a)
         print("%.2f" % x1)
+    else:
+        x = -b*1.00/(2*a)
+        print("%0.2f" % x)

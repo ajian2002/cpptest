@@ -1,3 +1,4 @@
+
 *
 !*.c
 !*.py
@@ -6,7 +7,7 @@
 !*.cpp
 !/leecode/*.c
 !/leecode/*.cpp
-!/leecode/**/*.c
+!/**/*.c
 !/luogu/*.c
 !/luogu/*.cpp
 !/python/*.py

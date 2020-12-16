@@ -26,6 +26,8 @@ int main()
     one->next->next = creaklink();
     one->next->next->data = 3;
     one->next->next->next = one;
+    belink *rearA = one->next->next;
+
     belink *two = creaklink();
     two->data = 4;
     two->next = creaklink();
@@ -33,6 +35,9 @@ int main()
     two->next->next = creaklink();
     two->next->next->data = 6;
     two->next->next->next = two;
+    belink *rearB = two->next->next;
     //循环链表的合并
-    
+    //a+b
+    rearA->next = two;
+    rearB->next = one;
 }

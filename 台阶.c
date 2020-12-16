@@ -7,7 +7,7 @@ int main()
     scanf("%d", &n);
     int a[n + 1];
     a[0] = 0;
-    int sum = 0;
+    //int sum = 0;
     for (int i = 1; i <= n; i++)
         a[i] = i;
     //  sum = taijie(a, n);

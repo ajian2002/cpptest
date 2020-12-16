@@ -200,4 +200,11 @@ void reverse1(linklist *link) //递归逆置
 }
 void reverse2(linklist *link) //非递归逆置
 {
+
+
+
+
+
+
+
 }

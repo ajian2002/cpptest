@@ -5,6 +5,7 @@
 !README.md
 !.gitignore
 !*.cpp
+!/wenjian/*.md
 !/leecode/*.c
 !/leecode/*.cpp
 !/leecode/**/*.c

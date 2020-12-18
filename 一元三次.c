@@ -1,7 +1,5 @@
 #include <stdio.h>
-#define size 10;
 double x(int a, int b, int c, int d, int s);
-int s1(int a, int b, int c, int d, int s);
 int main()
 {
     int a, b, c, d, s;
@@ -22,22 +20,9 @@ int main()
     double xx3 = x(a, b, c, d, s);
     printf("%.2f %.2f %.2f ", xx1, xx2, xx3);
 }
-int ss1(int a, int b, int c, int d, int s)
-{
-    int s1 = (a * s * s * s + b * s * s + c * s + d);
-    int s2 = (a * (s + size) * (s + size) * (s + size) + b * (s + size) * (s + size) + c * (s + size) + d);
-    int s3 = (a * (s - size) * (s - size) * (s - size) + b * (s - size) * (s - size) + c * (s - size) + d);
-    if (s1 * s2 < 0)
-        return s;
-    else
-        s += size;
-    ss1(a, b, c, d, s);
-    //   return s1;
-}
 double x(int a, int b, int c, int d, int s)
 {
-
-    double sum = s * 1.000;
+    double sum = s;
     while ((a * sum * sum * sum + b * sum * sum + c * sum + d) * (a * (sum + 1) * (sum + 1) * (sum + 1) + b * (sum + 1) * (sum + 1) + c * (sum + 1) + d) > 0)
         sum += 1;
     while ((a * sum * sum * sum + b * sum * sum + c * sum + d) * (a * (sum + 0.1) * (sum + 0.1) * (sum + 0.1) + b * (sum + 0.1) * (sum + 0.1) + c * (sum + 0.1) + d) > 0)

@@ -12,3 +12,6 @@
 !/luogu/*.c
 !/luogu/*.cpp
 !/python/*.py
+!/learn/*.h
+!/learn/*.c
+

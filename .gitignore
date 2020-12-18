@@ -5,13 +5,5 @@
 !README.md
 !.gitignore
 !*.cpp
-!/wenjian/*.md
-!/leecode/*.c
-!/leecode/*.cpp
-!/leecode/**/*.c
-!/luogu/*.c
-!/luogu/*.cpp
-!/python/*.py
-!/learn/*.h
-!learn/*.c
+!/
 

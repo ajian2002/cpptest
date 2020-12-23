@@ -1,20 +1,34 @@
-a, b, c = map(int, input().split())
-if a == 0:
-    if b == 0:
-        print("No")
-    else:
-        x = -c*1.000/b
-        print("%0.2f" % x)
-else:
-    delt = (b**2-4*a*c)
-    if delt < 0:
-        print("No")
-    elif delt > 0:
-        delt = delt**(1/2)
-        x2 = (delt-b)*1.00/(2*a)
-        print("%0.2f" % x2, end=" ")
-        x1 = (-b-delt)*1.00/(2*a)
-        print("%.2f" % x1)
-    else:
-        x = -b*1.00/(2*a)
-        print("%0.2f" % x)
+x = int(input())
+n = x*x
+s = []
+for i in range(x):
+    s.append([])
+    s[i].extend([0]*x)
+zz = 1
+le = 0
+ri = x-1
+temp = x-1
+while n > 0:
+
+    for i in range(x-zz, zz-1, -1):
+        s[ri][i] = n
+        n -= 1
+    for i in range(x-zz, zz-1, -1):
+        s[i][le] = n
+        n -= 1
+    for i in range(zz-1, x-zz):
+        s[le][i] = n
+        n -= 1
+    for i in range(zz-1, x-zz):
+        s[i][ri] = n
+        n -= 1
+    le += 1
+    ri -= 1
+    temp -= 2
+    zz += 1
+
+
+for i in range(x):
+    for j in range(x-1):
+        print("%-3d " % s[i][j], end="")
+    print(s[i][j+1])

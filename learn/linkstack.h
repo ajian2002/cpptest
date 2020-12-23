@@ -1,36 +1,36 @@
 #include <stdio.h>
 #include <stdlib.h>
-
-typedef struct linkstack
+struct linkstack
 {
     int data;
     struct linkstack *next;
 };
 
-void *init_linkstack(int size)
+void *init_stack(int frist)
 {
-    linkstack *S = (linkstack *)malloc(size * sizeof(linkstack));
-    linkstack *temp = S;
-    for (int i = 0; i < size - 1; i++)
-        temp = temp->next;
-    temp->next = NULL;
+    struct linkstack *S = (struct linkstack *)malloc(sizeof(struct linkstack));
     if (S)
+    {
+        S->data = frist;
+        S->next = NULL;
+
         return S;
+    }
     else
-        printf("ERROR\n");
+        printf(" creat ERROR\n");
 }
-void del_linkstack(linkstack *S)
+void del_stack(struct linkstack *S)
 {
     while (S)
     {
-        linkstack *temp = S;
+        struct linkstack *temp = S;
         S = S->next;
         free(temp);
     }
 }
-void pop_linkstack(linkstack *S)
+void pop_stack(struct linkstack *S)
 {
-    if (S->next && S)
+    if (S->next)
     {
         while (S->next->next != NULL)
         {
@@ -52,26 +52,20 @@ void pop_linkstack(linkstack *S)
         printf("弹栈出错\n");
     }
 }
-void push_linkstack(linkstack *S, int elem)
+void push_stack(struct linkstack *S, int elem)
 {
-    linkstack *temp = S;
-    if (S == NULL)
+    struct linkstack *temp1 = S;
+    if (1)
     {
-        S = (linkstack *)malloc(sizeof(linkstack));
-        S->data = elem;
-        S->next = NULL;
-    }
-    else
-    {
-        while (S->next != NULL)
-            S = S->next;
-        temp = (linkstack *)malloc(sizeof(linkstack));
+        while (temp1->next != NULL)
+            temp1 = temp1->next;
+        struct linkstack *temp = (struct linkstack *)malloc(sizeof(struct linkstack));
         temp->data = elem;
         temp->next = NULL;
-        S->next = temp;
+        temp1->next = temp;
     }
 }
-void see_linkstack(linkstack *S)
+void see_stack(struct linkstack *S)
 {
     if (S == NULL)
     {
@@ -79,11 +73,12 @@ void see_linkstack(linkstack *S)
     }
     else
     {
-        linkstack *temp = S;
+        struct linkstack *temp = S;
         while (temp != NULL)
         {
             printf("%d ", temp->data);
             temp = temp->next;
         }
+        printf("\n");
     }
 }

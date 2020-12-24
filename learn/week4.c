@@ -105,6 +105,27 @@ void *to(const char *s)
             continue;
         }
 
+        else if (s[i] >= '0' && s[i] <= '9' && st[sm - 1] == 100)
+        { //int
+
+            //char
+
+            prev = temp;
+            temp = (no *)malloc(sizeof(no));
+            temp->next = NULL;
+            prev->next = temp;
+            int len = 1;
+            while (s[i + len] >= '0' && s[i + len] <= '9')
+            {
+                len++;
+            }
+
+            ii[i] = atoi(s[i]);
+            printf("%d", ii[i]);
+            exit(1);
+            prev->d = &ii[i];
+            prev->ty = 4;
+        }
         /*else if (s[i] == '"')
         {
             if (yi != 0 || yin[yi - 1] == '"') //you
@@ -158,9 +179,8 @@ void *to(const char *s)
                 temp = (no *)malloc(sizeof(no));
                 temp->next = NULL;
                 prev->next = temp;
-                char *ssd = (char *)malloc(sizeof(char));
-                *ssd = s[i - 1];
-                prev->d = ssd;
+
+                prev->d = &s[i - 1];
                 prev->ty = 1;
             }
             else
@@ -172,37 +192,10 @@ void *to(const char *s)
         {
             if (fu[j - 1] == '[')
             {
-                sm -= 1;
-                j--;
-            }
-        }
-        else
-        {
-            if (s[i] >= '0' && s[i] <= '9' && (s[i - 1] == ',' || s[i - 1] == '[' || s[i - 1] == ']'))
-            {
-                //char
-
-                prev = temp;
-                temp = temp->next;
-                temp = (no *)malloc(sizeof(no));
-                temp->next = NULL;
-                prev->next = temp;
-                int *ssd = (int *)malloc(sizeof(int));
-                *ssd = atoi(&s[i]);
-                prev->d = ssd;
-                prev->ty = 4;
-                int len = 1;
-                int gfg = *ssd;
-                while (gfg >= 10)
-                {
-                    len++;
-                    gfg /= 10;
-                }
-                i += len - 1;
+                sm -= 2;
             }
         }
     }
-
     free(temp);
     prev->next = NULL;
     //printf("%s\n", s);
@@ -216,7 +209,6 @@ void del(no *head)
         temp = head;
 
         head = head->next;
-        free(temp->d);
         free(temp);
     }
 }

@@ -39,14 +39,15 @@
  */
 
 // @lc code=start
-#include<stdio.h>
-
 int strStr(char *haystack, char *needle)
 {
+    if (haystack == "" && needle == "")
+        return 0;
+    char *x = strstr(haystack, needle);
+    if (x != NULL)
+        return (int)x - (int)haystack;
+    else
+        return -1;
 }
-int main()
-{
-    char *haystack =
-    strStr
-}
+
 // @lc code=end

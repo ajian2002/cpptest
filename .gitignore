@@ -1,8 +1,5 @@
 *
 !/**/
-/WeeklyTasks/guangdong
-/WeeklyTasks/xidian
-/WeeklyTasks/xiyou
 !.gitignore
 !README.md
 !*.c
@@ -16,9 +13,3 @@
 !/**/*.md
 !/**/*.py
 !/**/makefile
-
-
-
-
-
-WeeklyTasks

@@ -39,14 +39,16 @@
  */
 
 // @lc code=start
-#include<stdio.h>
+#include <stdio.h>
 
 int strStr(char *haystack, char *needle)
 {
 }
 int main()
 {
-    char *haystack =
-    strStr
+    char *haystack = "hello";
+    char *needle = "ll";
+    int x = strStr(haystack, needle);
+    printf("%d", x);
 }
 // @lc code=end

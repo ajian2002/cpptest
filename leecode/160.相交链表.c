@@ -81,12 +81,55 @@
  *     struct ListNode *next;
  * };
  */
-struct ListNode *getIntersectionNode(struct ListNode *headA, struct ListNode *headB) {
-    while(headA->next!=NULL)
+struct ListNode *getIntersectionNode(struct ListNode *headA, struct ListNode *headB)
+{
+    struct ListNode *x = headA;
+    struct ListNode *y = headB;
+    int lena = 0;
+    int lenb = 0;
+    while (y != NULL)
     {
-        
+        lenb++;
+        y = y->next;
     }
-    
+    while (x != NULL)
+    {
+        lena++;
+        x = x->next;
+    }
+    int size = 0;
+    if (lena > lenb)
+    {
+        size = lena - lenb;
+        x = headA;
+        y = headB;
+        for (int i = 0; i < size; i++)
+        {
+            x = x->next;
+        }
+    }
+    else
+    {
+        size = lenb - lena;
+        y = headB;
+        x = headA;
+        for (int i = 0; i < size; i++)
+        {
+            y = y->next;
+        }
+    }
+    while (x != NULL)
+    {
+        if (x == y) //x->next == y->next && x->val == y->val
+        {
+            return x;
+        }
+        else
+        {
+            x = x->next;
+            y = y->next;
+        }
+    }
+    return NULL;
 }
 // @lc code=end
-

@@ -12,7 +12,15 @@
  *     struct ListNode *next;
  * };
  */
-
+struct ListNode *reserve(struct ListNode *head)
+{
+    if (head == NULL || head->next == NULL)
+        return head;
+    struct ListNode *temp = reserve(head->next);
+    head->next->next = head;
+    head->next = NULL;
+    return temp;
+}
 bool isPalindrome(struct ListNode *head)
 {
     int len = 0;
@@ -49,9 +57,7 @@ bool isPalindrome(struct ListNode *head)
         }
     }
     temp = head;
-    int max = right->val + temp->val;
-    if (2 * sl != sum)
-        return false;
+    //int max = right->val + temp->val ;
     if (len == 2 || len == 3)
     {
         if (right->val == temp->val)
@@ -73,6 +79,21 @@ bool isPalindrome(struct ListNode *head)
     }
     return true;
     */
+    //逆置
+    right = reserve(right);
+    while (right != NULL)
+    {
+        if (right->val == temp->val)
+        {
+            right = right->next;
+            temp = temp->next;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 // @lc code=end

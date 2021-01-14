@@ -1,15 +1,4 @@
 *
-!/**/
-!.gitignore
-!README.md
 !*.c
-!*.cpp
-!*.py
-!*.md
 !*.h
-!/**/*.cpp
-!/**/*.c
-!/**/*.h
-!/**/*.md
-!/**/*.py
-!/**/makefile
+!/**/

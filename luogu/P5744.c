@@ -5,6 +5,7 @@ typedef struct
     int age;
     int sum;
 } node;
+
 node *dep(node *a)
 {
     a->age++;

@@ -16,5 +16,5 @@ int main()
     fseek(in, 0, SEEK_END);
     printf("%ld\n", ftell(in));
 
-  //fputs(s, in);
+    //fputs(s, in);
 }

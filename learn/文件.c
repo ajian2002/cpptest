@@ -8,14 +8,14 @@
 #include <string.h>
 int main()
 {
-    int fw = creat("/home/ajian/code/cpptest/learn/cin", S_IRWXU);
-    int fp = open("/home/ajian/code/cpptest/learn/cin.in", O_RDONLY); //777  00700 S_IRWXU
-    printf("%d,%d,%d\n", fw, fp, errno);                              //3 4
+    int fc = creat("/home/ajian/code/cpptest/learn/cin", S_IRWXU);
+    int fo = open("/home/ajian/code/cpptest/learn/cin.in", O_RDONLY); //777  00700 S_IRWXU
+    printf("%d,%d,%d\n", fc, fo, errno);                              //3 4
     char *s = (char *)malloc(sizeof(char) * 10);
     memset(s, '\0', sizeof(char) * 10);
-    read(fp, s, 5);
+    read(fo, s, 5);
     printf("%s\n", s);
-    close(fp);
+    close(fo);
     free(s);
     //perror("abc");
     //默认有   str: status

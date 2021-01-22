@@ -1,20 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <unistd.h>
 int main()
 {
-    int n = 0;
-    printf("%d\n", n);
-    FILE *in = fopen("cin.in", "r+");
-    if (in == NULL)
-    {
-        printf("open file failed");
-        return -1;
-    }
-    char *s = (char *)calloc(20, sizeof(char));
-    fgets(s, 6, in);
-    printf("%s\n", s);
-    fseek(in, 0, SEEK_END);
-    printf("%ld\n", ftell(in));
-
-    //fputs(s, in);
+    creat("/home/ajian/code/cpptest/learn/cin", S_IRWXU);
+    int fp = open("/home/ajian/code/cpptest/learn/cin.in", O_RDONLY); //777  00700 S_IRWXU
+    
+    printf("%d\n", fp);
+    close(fp);
+    return 0;
 }

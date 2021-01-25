@@ -143,11 +143,16 @@ int main()
     char buf[20];
     memset(buf, 0, sizeof(buf));
     struct flock lock;
-    //int fc = creat("/home/ajian/code/cpptest/learn/cin", S_IRWXU);
-    int fo = open("/home/ajian/code/cpptest/learn/cin.in", O_RDWR); //777  00700 S_IRWXU
+
+    strcpy(buf, "aaabbbcccdddeee");
+
+    int fo = open("cin.in", O_RDWR | O_CREAT | O_TRUNC, S_IRWXU); //777  00700 S_IRWXU
     if (fo == -1)
         myerror("open", __LINE__ - 2);
 
+    if (write(fo, "aaabbbcccdddeee", 15) != 15)
+        myerror("write", __LINE__ - 2);
+    memset(buf, '\0', sizeof(buf));
     //seefl(fo);
     // setfl(fo, O_APPEND);
     //seefl(fo);
@@ -157,6 +162,7 @@ int main()
     //wronly   2^0    1       01
     //rdwr     2^1    2       10
     //accmode         3       11
+
     memset(&lock, 0, sizeof(struct flock));
     lock.l_start = SEEK_SET;
     lock.l_whence = 0;

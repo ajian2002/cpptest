@@ -14,8 +14,27 @@
  * int guess(int num);
  */
 
-int guessNumber(int n){
-	
+int guessNumber(int n)
+{
+    srand((unsigned int)time(NULL));
+    int left = 0;
+    int right = n;
+    long count = (right - left) / 2;
+    int compare = guess(count);
+    while (compare != 0)
+    {
+
+        if (compare > 0) //count -n
+        {
+            left = count + 1;
+        }
+        else //0-count
+        {
+            right = count - 1;
+        }
+        count = (right - left) / 2 + left;
+        compare = guess(count);
+    }
+    return (int)count;
 }
 // @lc code=end
-

@@ -16,6 +16,11 @@
 #define LSNONE 0
 #define LSA 1
 #define LSL 2
+#define LSI 4
+//-a -l 目录蓝色 已支持
+//快排  字符串索引排序 已优化
+
+//-i  未完成
 
 //seeerorr
 void myerror(const char *error_string, int line)
@@ -92,7 +97,7 @@ void singlename(char *name, char colorkind)
     //彩色打印
     if (colorkind == 'd')
     {
-        printf(L_BLUE "%-s"NONE, name);
+        printf(L_BLUE "%-s" NONE, name);
     }
     else
     {

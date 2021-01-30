@@ -11,16 +11,18 @@
 #include <pwd.h>
 #include <time.h>
 #include <linux/limits.h>
-#include "color.h"
+#include <color.h>
 #define MAXCHAR 80
 #define LSNONE 0
 #define LSA 1
 #define LSL 2
 #define LSI 4
-//-a -l 目录蓝色 已支持
-//快排  字符串索引排序 已优化
+//-a -l 目录蓝色 已支持  //-i  未完成
 
-//-i  未完成
+//快排  字符串索引排序 已优化
+//color.h 在 https://pan.yegetables.com/s/zgul  查看获取 
+//下载后放置于/usr/include目录下
+
 
 //seeerorr
 void myerror(const char *error_string, int line)

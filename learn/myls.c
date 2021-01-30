@@ -11,6 +11,7 @@
 #include <pwd.h>
 #include <time.h>
 #include <linux/limits.h>
+#include "color.h"
 #define MAXCHAR 80
 #define LSNONE 0
 #define LSA 1
@@ -51,8 +52,34 @@ S_ISSOCK(mode)//是否为socket
 int rlen = MAXCHAR; //本行剩余长度
 int maxlen;         //最长文件名长度
 
+//快排
+void strqsort(char before[][PATH_MAX + 1], int *now, int l, int r)
+{
+    int j = l, k = r;
+    if (l < r)
+    {
+        int temp = now[l];
+        while (l != r)
+        {
+            while (l < r && strcmp(before[now[r]], before[temp]) >= 0)
+                r--;
+            //p[l] = p[r];
+            now[l] = now[r];
+            while (l < r && strcmp(before[now[l]], before[temp]) <= 0)
+                l++;
+            //p[r] = p[l];
+            now[r] = now[l];
+        }
+        if (r == l)
+            now[r] = temp;
+
+        strqsort(before, now, r + 1, k);
+        strqsort(before, now, j, r - 1);
+    }
+}
+
 // 列出一个文件名字
-void singlename(char *name)
+void singlename(char *name, char colorkind)
 {
 
     //判断本行是否足够打印
@@ -61,9 +88,19 @@ void singlename(char *name)
         printf("\n");
         rlen = MAXCHAR;
     }
+
+    //彩色打印
+    if (colorkind == 'd')
+    {
+        printf(L_BLUE "%-s"NONE, name);
+    }
+    else
+    {
+        printf("%-s", name);
+    }
+
     //空格补齐
     int kong = maxlen - strlen(name);
-    printf("%-s", name);
     for (int i = 0; i < kong; i++)
     {
         printf(" ");
@@ -74,7 +111,7 @@ void singlename(char *name)
 }
 
 // -l打印一行  没有名字
-void lenname(struct stat a)
+char lenname(struct stat a)
 {
     struct passwd *p;
     struct group *g;
@@ -85,7 +122,9 @@ void lenname(struct stat a)
     {
         //文件类型
         if (S_ISDIR(a.st_mode))
+        {
             printf("d");
+        }
         else if (S_ISREG(a.st_mode))
             printf("-");
         else if (S_ISLNK(a.st_mode))
@@ -196,6 +235,11 @@ void lenname(struct stat a)
     strcpy(mtime, ctime(&a.st_mtim)); //mon jan 25 23:35:09 2021\n\0
     mtime[strlen(mtime) - 1] = '\0';
     printf("%s  ", mtime);
+
+    if (S_ISDIR(a.st_mode))
+        return 'd';
+    else
+        return ' ';
 }
 
 //对目录处理
@@ -239,8 +283,10 @@ void lsdir(int kind, char *path)
         strcat(filename[i], p->d_name);
         filename[i][lenpath + strlen(p->d_name)] = '\0';
     }
-    //排序
+
+    //冒泡排序
     char temp[PATH_MAX + 1];
+    /*
     for (int i = 0; i < count - 1; i++)
     {
         for (int j = 0; j < count - 1 - j; j++)
@@ -258,12 +304,22 @@ void lsdir(int kind, char *path)
             }
         }
     }
-
     //状态转移
     for (int i = 0; i < count; i++)
         lsfile(kind, filename[i]);
-    close(dir);
+*/
+    //快速排序
 
+    int teemp[count];
+    for (int i = 0; i < count; i++)
+        teemp[i] = i;
+
+    strqsort(filename, teemp, 0, count - 1);
+    //状态转移
+    for (int i = 0; i < count; i++)
+        lsfile(kind, filename[teemp[i]]);
+
+    close(dir);
     //没有-l就换行
     if (kind & LSL == 0)
     {
@@ -317,23 +373,33 @@ void lsfile(int kind, char *name)
     strncpy(temp, &nfilename[wei], strlen(nfilename) - wei);
     temp[strlen(nfilename) - wei] = '\0';
 
+    stat(nfilename, &st);
+    char colorkind = ' ';
     //确定显示方式  l
     if (kind & LSL)
     {
 
-        stat(nfilename, &st);
-        lenname(st);
-        printf("%s\n", temp);
+        colorkind = lenname(st);
+        //彩色打印
+        if (colorkind == 'd')
+            printf(L_BLUE "%s\n" NONE, temp);
+        else
+            printf("%s\n", temp);
     }
     else
     {
-        singlename(temp);
+        if (S_ISDIR(st.st_mode))
+        {
+            colorkind = 'd';
+        }
+        //色彩传递,彩色打印
+        singlename(temp, colorkind);
     }
 }
 
 int main(int argc, char **argv) //ls 0  -al 1  / 2  /home 3
 {
-
+    srand((unsigned int)time(NULL));
     char path[PATH_MAX + 1];
     int kind = LSNONE;
     int pathnumber = 0;

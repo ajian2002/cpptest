@@ -7,6 +7,8 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <syslog.h>
+
+#include <sys/wait.h>
 int m = 0;
 
 int init_daemon(void)
@@ -43,7 +45,7 @@ int init_daemon(void)
     signal(SIGCHLD, SIG_IGN); //忽略SIGCHLD信号
     return 0;
 }
-int main()
+int main(int argc, char **argv, char **environ)
 {
     pid_t pid;
     int k = 0;
@@ -114,16 +116,55 @@ int main()
         break;
     }*/
 
+    /*守护进程
     time_t now;
     init_daemon();
     openlog("test.log", LOG_CONS | LOG_PID, LOG_LOCAL2);
     syslog(LOG_USER| LOG_INFO, "守护进程\n");
-    while (k ==0)
+    while (k <=20)
     {
         k++;
-        time(&now);
-        syslog(LOG_LOCAL2|LOG_INFO, "系统时间\t%s\t\t\n", ctime(&now));
+        sleep(2);
+        //time(&now);
+        //syslog(LOG_LOCAL2|LOG_INFO, "系统时间\t%s\t\t\n", ctime(&now));
+        syslog(LOG_LOCAL2 | LOG_INFO, "%d\n", k);
     }
     closelog();
-return 0;
+*/
+//wait和execve
+    printf("%s\n", environ[0]);pid_t pidd=0;
+    pid = fork();
+    switch (pid)
+    {
+    case 0:
+        sleep(10);
+        execve("/home/ajian/code/cpptest/learn/hello", argv, environ);
+        exit(1);
+        break;
+    default:
+        //wait(NULL);
+        //waitpid(pid, NULL, WNOHANG) ;
+        while (k < 10)
+        {
+            printf("%d", k);
+            k++;
+            pidd=waitpid(pid, (int *)0, WNOHANG);
+            if (pidd <=0)
+            {
+                printf("%d\n", pidd);
+                sleep(3);
+            }
+            else
+            {
+                exit(1);
+            }
+        }
+
+        printf("kill father\n");
+        exit(0);
+        break;
+    }
+
+
+    return 0;
 }

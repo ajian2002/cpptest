@@ -50,7 +50,7 @@ int main(int argc, char **argv, char **environ)
     pid_t pid;
     int k = 0;
     char *msg = NULL;
-
+    pid = fork();
     /* 父子进程顺序
     switch (pid)
     {
@@ -91,6 +91,34 @@ int main(int argc, char **argv, char **environ)
         printf(" father: %d->%d->%d\n", getppid(), getpid(), pid);
         break;
     }*/
+
+    //子进程结束输入坑
+    switch (pid)
+    {
+    case 0:
+        while (k <= 3)
+        {
+            k++;
+            printf(" child:%d->%d->%d\n", getppid(), getpid(), pid);
+            sleep(1);
+        }
+        break;
+    case -1:
+        printf("fork failed\n");
+        break;
+    default:
+        printf(" father: %d->%d->%d\n", getppid(), getpid(), pid);
+        break;
+    }
+    if (pid > 0)
+    {
+        if (waitpid(pid, NULL, 0) == -1)
+        {
+            perror("wait for child error");
+            exit(-1);
+        }
+    }
+
     /*全局变量共享 局部变量不共享    vfork共享 fork复制
     switch (pid)
     {
@@ -131,7 +159,8 @@ int main(int argc, char **argv, char **environ)
     }
     closelog();
 */
-//wait和execve
+    //wait和execve
+    /*
     printf("%s\n", environ[0]);pid_t pidd=0;
     pid = fork();
     switch (pid)
@@ -164,7 +193,7 @@ int main(int argc, char **argv, char **environ)
         exit(0);
         break;
     }
-
+*/
 
     return 0;
 }

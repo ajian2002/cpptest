@@ -133,7 +133,7 @@ void docmd(int count, char list[100][256]) //执行命令
     char infile[256];
     char pipfile[256];
     char next[100][256];
-
+char path[256]; 
     //execvp格式
     char *ll[256];
     for (int i = 0; i < count; i++)
@@ -146,14 +146,60 @@ void docmd(int count, char list[100][256]) //执行命令
     memset(outfile, '\0', sizeof(char) * 256);
     memset(pipfile, '\0', sizeof(char) * 256);
     memset(next, '\0', sizeof(char) * 256 * 100);
+    memset(path, '\0', sizeof(char) * 256);
     if (count < 1)
         return;
-
+    int have=0;
     //命令存在判断
     if (findexe(list[0]) == 0)
     {
-        perror("can't find cmd");
-        exit(-1);
+        if (strcmp(list[0], "cd") == 0) //cd
+        {
+            strcpy(path,getenv("HOME"));
+            if (count == 2)
+            {
+                for (int i=0; i < strlen(ll[1]); i++)
+                {
+                    if(list[1][i]=='~')
+                    {
+                        memset(path, 0, sizeof(path));
+                        strncpy(path,&list[1][0],i);
+                       // puts(path);
+                        strcat(path,getenv("HOME"));
+                       //puts(path);
+                        //strcat(path,"/");
+                        strcat(path,&list[1][i+1]);
+                       // puts(path);
+                        strcat(path,"/");
+                        have=1;
+                    }
+                }
+                if(have!=1)
+                {  
+                    memset(path, 0, sizeof(path));
+                    strcpy(path,ll[1]);
+                }
+            }
+            else if (count == 1)
+            {
+                chdir(getenv("HOME"));
+            }
+
+            if(strlen(path))
+            {
+                chdir(path);
+            }
+            else
+            {
+                perror("too many arguments");
+                exit(1);
+            }
+        }
+        else
+        {
+            perror("can't find cmd");
+            return;
+        }
     }
 
     //判断后台运行符&
@@ -264,27 +310,26 @@ void docmd(int count, char list[100][256]) //执行命令
             memset(list[outc], '\0', 256);
         }
     }
-    if (1) //pip
+
+    if (kind & PIP && pipc != -1) //pip
     {
-        if (kind & PIP && pipc != -1)
+        if (list[pipc][1] == '\0')
         {
-            if (list[pipc][1] == '\0')
-            {
-                strcpy(pipfile, list[pipc + 1]);
-                memset(list[pipc], '\0', 256);
-                memset(list[pipc + 1], '\0', 256);
-                pipc += 2;
-            }
-            else
-            {
-                strcpy(pipfile, list[pipc]);
-                temp = strlen(pipfile);
-                memmove(pipfile, &pipfile[1], temp - 1);
-                pipfile[temp - 1] = '\0';
-                memset(list[pipc], '\0', 256);
-                pipc += 1;
-            }
+            strcpy(pipfile, list[pipc + 1]);
+            memset(list[pipc], '\0', 256);
+            memset(list[pipc + 1], '\0', 256);
+            pipc += 2;
         }
+        else
+        {
+            strcpy(pipfile, list[pipc]);
+            temp = strlen(pipfile);
+            memmove(pipfile, &pipfile[1], temp - 1);
+            pipfile[temp - 1] = '\0';
+            memset(list[pipc], '\0', 256);
+            pipc += 1;
+        }
+
         strcpy(next[0], pipfile);
         int j = 1;
         for (int i = pipc; i < count; i++)
@@ -292,7 +337,7 @@ void docmd(int count, char list[100][256]) //执行命令
             if (strlen(list[i]))
                 strcpy(next[j++], list[i]);
         }
-    };
+    }
 
     //pip与重定向不能共存    目前无法实现
     /*if ()
@@ -371,7 +416,7 @@ void docmd(int count, char list[100][256]) //执行命令
     case NO:
         if (pid == 0)
         {
-            printf("\n");
+            //printf("\n");
             execvp(list[0], ll);
             exit(0);
         }

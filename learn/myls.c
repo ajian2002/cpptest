@@ -17,7 +17,8 @@
 #define LSA 1
 #define LSL 2
 #define LSI 4
-//-a -l 目录蓝色 已支持  //-i  未完成
+#define LSR 8
+//-a -l 目录蓝色 已支持  //-i  未完成 -R 未完成
 
 //快排  字符串索引排序 已优化
 //color.h 在 https://pan.yegetables.com/s/zgul  查看获取 
@@ -477,7 +478,7 @@ int main(int argc, char **argv) //ls 0  -al 1  / 2  /home 3
         else
             continue;
 
-        printf("%s\n", path);
+        printf("%s:\n", path);
 
         if (stat(path, &a) == -1)
             myerror("stat", __LINE__);

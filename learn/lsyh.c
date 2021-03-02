@@ -12,7 +12,7 @@
 #include <time.h>
 #include <linux/limits.h>
 #include <color.h>
-#define MAXFILES 10000
+#define MAXFILES 1000
 #define MAXCHAR 120
 #define LSNONE 0
 #define LSA 1
@@ -61,7 +61,7 @@ int rlen = MAXCHAR; //本行剩余长度
 int maxlen;         //最长文件名长度
 
 //快排
-void strqsort(char before[][PATH_MAX + 1], int *now, int l, int r)
+void strqsort(char before[][PATH_MAX], int *now, int l, int r)
 {
     int j = l, k = r;
     if (l < r)
@@ -308,13 +308,13 @@ void lsfile(int kind, char *name)
     //nname是去除隐藏文件的所有路径
     //temp是文件名
     //name-->nname->temp
-    char nfilename[PATH_MAX + 1];
-    memset(nfilename, '\0', PATH_MAX + 1);
+    char nfilename[PATH_MAX ];
+    memset(nfilename, 0, PATH_MAX );
     struct stat st;
     memset(&st, 0, sizeof(struct stat));
     int wei = 0;
     char temp[PATH_MAX];
-    memset(temp, '\0', PATH_MAX);
+    memset(temp, 0, PATH_MAX);
 
     //找到最后一个/
     wei = 0;
@@ -374,11 +374,12 @@ void lsfile(int kind, char *name)
 //对目录处理
 void lsdir(int kind, char *path)
 {
+    //printf("1\n");
     DIR *dir;
     struct dirent *p=NULL;
     int count = 0;
     
-    char filename[MAXFILES][PATH_MAX + 1];
+    char filename[MAXFILES][PATH_MAX];
     
     //获得最长文件名
     dir = opendir(path);
@@ -409,9 +410,9 @@ void lsdir(int kind, char *path)
             myerror("readdir", __LINE__);
 
         //path+name
-        strncpy((char *)(filename[i]), path, lenpath);
+        strncpy((filename[i]), path, lenpath);
         filename[i][lenpath] = '\0';
-        strcat((char *)(filename[i]), p->d_name);
+        strcat((filename[i]), p->d_name);
         filename[i][lenpath + strlen(p->d_name)] = '\0';
     }
     int teemp[count];
@@ -454,7 +455,7 @@ int ifhidefile(char *path) //原path+filename 目录后无/
 void geteverydir(int kind, char *path)
 {
     //  1.ls path
-    printf("%s\n", path);
+    printf("%s:\n", path);
     lsdir(kind, path);
     printf("\n");
 
@@ -466,10 +467,10 @@ void geteverydir(int kind, char *path)
     int dircount = 0;
     int hidedircount = 0;
     int rightcount = 0;
-    char filename[MAXFILES][PATH_MAX + 1];
+    char filename[MAXFILES][PATH_MAX ];
     memset(&a, 0, sizeof(struct stat));
     for (int i = 0; i < MAXFILES; i++)
-        memset(&filename[i], 0, PATH_MAX + 1);
+        memset(&filename[i], 0, PATH_MAX );
 
     dir = opendir(path);
     if (dir == NULL)
@@ -500,12 +501,12 @@ void geteverydir(int kind, char *path)
             myerror("readdir", __LINE__);
         if (strcmp(p->d_name, "..") == 0)
         {
-            memset(filename[i], 0, PATH_MAX + 1);
+            memset(filename[i], 0, PATH_MAX );
             continue;
         }
         else if (strcmp(p->d_name, ".") == 0)
         {
-            memset(filename[i], 0, PATH_MAX + 1);
+            memset(filename[i], 0, PATH_MAX );
             continue;
         }
         // path+file-/
@@ -527,7 +528,7 @@ void geteverydir(int kind, char *path)
                 hidedircount++;
                 if (!(kind & LSA)) //要隐藏
                 {
-                    memset(&filename[i], 0, PATH_MAX + 1);
+                    memset(&filename[i], 0, PATH_MAX );
                     continue;
                 }
             }
@@ -538,7 +539,7 @@ void geteverydir(int kind, char *path)
             }
         }
         else //不是目录
-            memset(filename[i], 0, PATH_MAX + 1);
+            memset(filename[i], 0, PATH_MAX );
     }
     if (kind & LSA)
         rightcount = dircount;
@@ -569,13 +570,14 @@ void geteverydir(int kind, char *path)
             maxlen = 0;
             rlen = MAXCHAR;
             rightcount--;
-            geteverydir(kind, (char *)filename[teemp[i]]);
+            geteverydir(kind,
+            (filename[teemp[i]]));
         }
         else
         {
 
             printf("%s\n", filename[teemp[i]]);
-            lsdir(kind, (char *)filename[teemp[i]]);
+            lsdir(kind, (char*)(filename[teemp[i]]));
             printf("\n");
         }
     }
@@ -614,7 +616,8 @@ void dealpath(int kind, char *path)
 int main(int argc, char **argv)
 {
     srand((unsigned int)time(NULL));
-    char path[PATH_MAX + 1];
+    char path[PATH_MAX];
+    memset(path, 0, PATH_MAX);
     int kind = LSNONE;
     int pathnumber = 0;
     //struct stat a;
@@ -656,7 +659,6 @@ int main(int argc, char **argv)
     //ls 不带路径(包含参数处理)
     if (argc == 1 || pathnumber == 0)
     {
-        memset(path, 0, sizeof(path));
         strcpy(path, "./");
         //lsdir(kind, path);
         dealpath(kind, path);
@@ -667,12 +669,9 @@ int main(int argc, char **argv)
     //解析多路径
     for (int i = 1; i < argc; i++)
     {
-        memset(path, 0, sizeof(path));
-        //memset(&a, 0, sizeof(struct stat));
-        //memset(temppath, '\0', PATH_MAX);
-
-        if (argv[i][0] != '-') //不支持路径名带'-'
-            explainfakepath(argv[i], path);
+        memset(path, 0, PATH_MAX );
+        if (argv[i][0] != '-')  //不支持路径名带'-'
+        explainfakepath(argv[i], path);
         else
             continue;
 

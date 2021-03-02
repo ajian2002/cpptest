@@ -12,6 +12,7 @@
 #include <time.h>
 #include <linux/limits.h>
 #include <color.h>
+#define MAXFILES 10000
 #define MAXCHAR 120
 #define LSNONE 0
 #define LSA 1
@@ -239,7 +240,7 @@ char lenname(struct stat a)
     printf("%-6ld ", a.st_size);
 
     //mtime
-    strcpy(mtime, ctime(&a.st_mtim)); //mon jan 25 23:35:09 2021\n\0
+    strcpy(mtime, ctime(&a.st_mtime)); //mon jan 25 23:35:09 2021\n\0
     mtime[strlen(mtime) - 1] = '\0';
     printf("%s  ", mtime);
 
@@ -249,92 +250,55 @@ char lenname(struct stat a)
         return ' ';
 }
 
-//对目录处理
-void lsdir(int kind, char *path)
+
+//解析文件路径并修正
+void isrightfile(char *fakepath)
 {
-    DIR *dir;
-    struct dirent *p;
-    int count = 0;
-    int dircount = 0;
-    char filename[256][PATH_MAX + 1];
-
-    //获得最长文件名
-    dir = opendir(path);
-    if (dir == NULL)
-        myerror("opendir", __LINE__);
-    while ((p = readdir(dir)) != NULL)
+    struct stat a;
+    memset(&a, 0, sizeof(struct stat));
+    //目录补全   正误勘别
+    if (stat(fakepath, &a) == -1)
     {
-        if (maxlen < strlen(p->d_name))
-        {
-            maxlen = strlen(p->d_name);
-        }
-
-        count++;
+        printf("%s:\n", fakepath);
+        myerror("stat", __LINE__);
     }
-    closedir(dir);
-    if (count > 256)
-        myerror("two many files", __LINE__);
-
-    //存储文件名 path+name
-    dir = opendir(path);
-    if (dir == NULL)
-        myerror("opendir", __LINE__);
-    int lenpath = strlen(path);
-    for (int i = 0; i < count; i++)
+    if (S_ISDIR(a.st_mode))
     {
-        p = readdir(dir);
-        if (p == NULL)
-            myerror("readdir", __LINE__);
-
-        //path+name
-        strncpy(filename[i], path, lenpath);
-        filename[i][lenpath] = '\0';
-        strcat(filename[i], p->d_name);
-        filename[i][lenpath + strlen(p->d_name)] = '\0';
-    }
-
-    //冒泡排序
-    char temp[PATH_MAX + 1];
-    /*
-    for (int i = 0; i < count - 1; i++)
-    {
-        for (int j = 0; j < count - 1 - j; j++)
+        if (fakepath[strlen(fakepath) - 1] != '/')
         {
-            if (strcmp(filename[i], filename[j]) > 0)
-            {
-                memset(temp, '\0', sizeof(temp));
-                strcpy(temp, filename[i]);
-
-                memset(filename[i], '\0', strlen(filename[i]));
-                strcpy(filename[i], filename[j]);
-
-                memset(filename[j], '\0', strlen(filename[j]));
-                strcpy(filename[j], temp);
-            }
+            fakepath[strlen(fakepath)] = '/';
+            fakepath[strlen(fakepath) + 1] = '\0';
         }
     }
-    //状态转移
-    for (int i = 0; i < count; i++)
-        lsfile(kind, filename[i]);
-*/
-    //快速排序
+    //return fakepath;
+}
+void explainfakepath(char *argv, char *path)
+{
 
-    int teemp[count];
-    for (int i = 0; i < count; i++)
-        teemp[i] = i;
+    //输入 预期
+    //  (1)/a
+    //  (2)     ./   ||    .
+    //  (3) abc--->(./abc)
+    //  (4)  ./abc
 
-    strqsort(filename, teemp, 0, count - 1);
-
-    //状态转移
-    for (int i = 0; i < count; i++)
-        lsfile(kind, filename[teemp[i]]);
-
-    close(dir);
-    //没有-l就换行
-    if (kind & LSL == 0)
+    if (argv[0] == '/') //单独目录(1)
     {
-        printf("\n");
+        strcpy(path, argv);
     }
+    else if (!strcmp(argv, ".") || !strcmp(argv, "./")) //(2)
+    {
+        strcpy(path, "./");
+    }
+    else if (!strncmp(argv, "./", 2) && strlen(argv) != 2) //(4)
+    {
+        strcpy(path, argv);
+    }
+    else //(3)
+    {
+        strcpy(path, "./");
+        strcat(path, argv);
+    }
+    isrightfile(path);
 }
 
 //对文件处理
@@ -385,10 +349,10 @@ void lsfile(int kind, char *name)
 
     stat(nfilename, &st);
     char colorkind = ' ';
+
     //确定显示方式  l
     if (kind & LSL)
     {
-
         colorkind = lenname(st);
         //彩色打印
         if (colorkind == 'd')
@@ -407,20 +371,106 @@ void lsfile(int kind, char *name)
     }
 }
 
+//对目录处理
+void lsdir(int kind, char *path)
+{
+    DIR *dir;
+    struct dirent *p=NULL;
+    int count = 0;
+    
+    char filename[MAXFILES][PATH_MAX + 1];
+    
+    //获得最长文件名
+    dir = opendir(path);
+    if (dir == NULL)
+        myerror("opendir", __LINE__);
+    while ((p = readdir(dir)) != NULL)
+    {
+        if (maxlen < strlen(p->d_name))
+        {
+            maxlen = strlen(p->d_name);
+        }
+
+        count++;
+    }
+    closedir(dir);
+    if (count > MAXFILES)
+        myerror("two many files", __LINE__);
+
+    //存储文件名 path+name
+    dir = opendir(path);
+    if (dir == NULL)
+        myerror("opendir", __LINE__);
+    int lenpath = strlen(path);
+    for (int i = 0; i < count; i++)
+    {
+        p = readdir(dir);
+        if (p == NULL)
+            myerror("readdir", __LINE__);
+
+        //path+name
+        strncpy((char *)(filename[i]), path, lenpath);
+        filename[i][lenpath] = '\0';
+        strcat((char *)(filename[i]), p->d_name);
+        filename[i][lenpath + strlen(p->d_name)] = '\0';
+    }
+    int teemp[count];
+    for (int i = 0; i < count; i++)
+        teemp[i] = i;
+    strqsort(filename, teemp, 0, count - 1);
+
+    //状态转移
+    for (int i = 0; i < count; i++)
+        lsfile(kind, (char *)(filename[teemp[i]]));
+
+    closedir(dir);
+    //没有-l就换行
+    if (!(kind & LSL) )
+    {
+        printf("\n");
+    }
+}
+
+//判断隐藏?
+int ifhidefile(char *path) //原path+filename 目录后无/
+{
+    int wei = 0;
+    for (int i = 0; i < strlen(path); i++)
+    {
+        if (path[i] == '/')
+        {
+            wei = i + 1;
+        }
+    }
+    if (path[wei] == '.')
+    {
+        return 1;
+    }
+    else
+        return 0;
+}
+
 //遍历目录下所有文件夹
 void geteverydir(int kind, char *path)
 {
-    //printf("%s\n", path);
-    //lsdir(kind, path);
-    //printf("\n");
+    //  1.ls path
+    printf("%s\n", path);
+    lsdir(kind, path);
+    printf("\n");
+
+    // count
     DIR *dir;
     struct dirent *p;
     int count = 0;
     struct stat a;
     int dircount = 0;
-    char filename[256][PATH_MAX + 1];
+    int hidedircount = 0;
+    int rightcount = 0;
+    char filename[MAXFILES][PATH_MAX + 1];
     memset(&a, 0, sizeof(struct stat));
-    //获得最长文件名
+    for (int i = 0; i < MAXFILES; i++)
+        memset(&filename[i], 0, PATH_MAX + 1);
+
     dir = opendir(path);
     if (dir == NULL)
     {
@@ -433,14 +483,12 @@ void geteverydir(int kind, char *path)
         {
             maxlen = strlen(p->d_name);
         }
-
-        count++;
-    }
-    closedir(dir);
-    if (count > 256)
+            count++;
+    
+    }closedir(dir);
+    if (count > MAXFILES)
         myerror("two many files", __LINE__);
 
-    //存储文件名 path+name
     dir = opendir(path);
     if (dir == NULL)
         myerror("opendir", __LINE__);
@@ -455,92 +503,125 @@ void geteverydir(int kind, char *path)
             memset(filename[i], 0, PATH_MAX + 1);
             continue;
         }
-        //        if(!strcmp(p->d_name,"."))
-        //path+name
-
         else if (strcmp(p->d_name, ".") == 0)
         {
-            strcpy(filename[i], path);
+            memset(filename[i], 0, PATH_MAX + 1);
             continue;
         }
-        else
-        {
-            //printf("%s\n%s\n", filename[i], path);
-            strncpy(filename[i], path, lenpath);
-            filename[i][lenpath] = '\0';
-            strcat(filename[i], p->d_name);
-            filename[i][lenpath + strlen(p->d_name)] = '\0';
-        }
+        // path+file-/
+        //dircount rightcount
+
+        //printf("%s\n%s\n", filename[i], path);
+        strncpy(filename[i], path, lenpath);
+        filename[i][lenpath] = '\0';
+        strcat(filename[i], p->d_name);
+        filename[i][lenpath + strlen(p->d_name)] = '\0';
+
         memset(&a, 0, sizeof(struct stat));
         stat(filename[i], &a);
         if (S_ISDIR(a.st_mode))
         {
-            dircount++;
-            if (filename[i][strlen(filename[i]) - 1] != '/')
+            dircount++; //无. ..
+            if (ifhidefile(filename[i]))
+            {
+                hidedircount++;
+                if (!(kind & LSA)) //要隐藏
+                {
+                    memset(&filename[i], 0, PATH_MAX + 1);
+                    continue;
+                }
+            }
+            if (strlen(filename[i])) //不是隐藏
             {
                 filename[i][strlen(filename[i])] = '/';
                 filename[i][strlen(filename[i]) + 1] = '\0';
             }
         }
-        else
+        else //不是目录
             memset(filename[i], 0, PATH_MAX + 1);
     }
-
-    //冒泡排序
-    char temp[PATH_MAX + 1];
+    if (kind & LSA)
+        rightcount = dircount;
+    else
+        rightcount = dircount - hidedircount;
 
     //快速排序
-
     int teemp[count];
     for (int i = 0; i < count; i++)
         teemp[i] = i;
 
     strqsort(filename, teemp, 0, count - 1);
-    int I = 0;
-    //状态转移
+
+    //递归
+    //printf("%d\n", rightcount);
+    //&& filename[teemp[i]][strlen(filename[teemp[i]]) - 1] == '/'
     for (int i = 0; i < count; i++)
     {
 
-        if (strlen(filename[teemp[i]]))
+        if (0==strlen(filename[teemp[i]]))
         {
-            //printf("%d %d %d ", dircount,i,count);
+            continue;
+        }
+        //printf("%d ", rightcount);
+        if (rightcount)
+        {
 
-            //printf("有加一\n\n\n");
-            if (dircount && filename[teemp[i]][strlen(filename[teemp[i]]) - 1] == '/' && I)
-            {
+            maxlen = 0;
+            rlen = MAXCHAR;
+            rightcount--;
+            geteverydir(kind, (char *)filename[teemp[i]]);
+        }
+        else
+        {
 
-                geteverydir(kind, filename[teemp[i]]);
-                dircount--;
-                maxlen = 0;
-                rlen = MAXCHAR;
-            }
-            else
-            {
-                I++;
-                printf("%s\n", filename[teemp[i]]);
-                lsdir(kind, filename[teemp[i]]);
-                printf("\n");
-                maxlen = 0;
-                rlen = MAXCHAR;
-            }
+            printf("%s\n", filename[teemp[i]]);
+            lsdir(kind, (char *)filename[teemp[i]]);
+            printf("\n");
         }
     }
     printf("\n");
-    close(dir);
+    closedir(dir);
     //printf("geteverydir over \n\n\n\n");
     //没有-l就换行
 }
+//处理路径 解析参数 分类状态处理
+void dealpath(int kind, char *path)
+{
+    struct stat a;
+    memset(&a, 0, sizeof(struct stat));
+    if (stat(path, &a) == -1)
+    {
+        printf("%s:\n", path);
+        myerror("stat", __LINE__);
+    }
+    if (S_ISDIR(a.st_mode))
+    {
+        if (kind & LSR)
+            geteverydir(kind, path);
+        else
+        {
+            printf("%s:\n", path);
+            lsdir(kind, path);
+        }
+    }
+    else
+    {
+        printf("%s:\n", path);
+        lsfile(kind, path);
+    }
+}
 
-int main(int argc, char **argv) //ls 0  -al 1  / 2  /home 3
+int main(int argc, char **argv)
 {
     srand((unsigned int)time(NULL));
     char path[PATH_MAX + 1];
     int kind = LSNONE;
     int pathnumber = 0;
-    struct stat a;
-    int mode[250] = {0};
-    char temppath[PATH_MAX];
-    //解析kind  -lalal
+    //struct stat a;
+    //int mode[250] = {0};
+    //char temppath[PATH_MAX];
+
+    //解析kind  -laR
     for (int i = 1; i < argc; i++)
     {
         if (argv[i][0] == '-')
@@ -572,101 +653,33 @@ int main(int argc, char **argv) //ls 0  -al 1  / 2  /home 3
         }
     }
 
-    //单独ls
-    if (argc == 1)
+    //ls 不带路径(包含参数处理)
+    if (argc == 1 || pathnumber == 0)
     {
-        kind = LSNONE;
+        memset(path, 0, sizeof(path));
         strcpy(path, "./");
-        path[2] = '\0';
-        lsdir(kind, path);
+        //lsdir(kind, path);
+        dealpath(kind, path);
+        printf("\n");
         return 0;
     }
 
-       //解析路径
+    //解析多路径
     for (int i = 1; i < argc; i++)
     {
         memset(path, 0, sizeof(path));
-        memset(&a, 0, sizeof(struct stat));
-        memset(temppath, '\0', PATH_MAX);
+        //memset(&a, 0, sizeof(struct stat));
+        //memset(temppath, '\0', PATH_MAX);
+
         if (argv[i][0] != '-') //不支持路径名带'-'
-        {
-            if (argv[i][0] == '/') //单独目录
-            {
-                strcpy(path, argv[i]);
-                path[strlen(argv[i])] = '\0';
-            }
-            else if (strcmp(argv[i], ".") && strcmp(argv[i], "./"))
-            {
-                strcpy(temppath, "./");
-                strcat(temppath, argv[i]);
-                if (stat(temppath, &a) != -1)
-                {
-                    strcpy(path, temppath);
-                }
-            }
-            else
-            {
-                strcpy(path, ".");
-            }
-        }
+            explainfakepath(argv[i], path);
         else
             continue;
 
-        //get path
-        if (stat(path, &a) == -1)
-        {
-            printf("%s:\n", path);
-            myerror("stat", __LINE__);
-        }
-        if (S_ISDIR(a.st_mode))
-        {
-            if (path[strlen(path) - 1] != '/')
-            {
-                path[strlen(path)] = '/';
-                path[strlen(path) + 1] = '\0';
-            }
-
-            if (kind & LSR)
-            {
-                geteverydir(kind, path);
-            }
-            else
-            {
-                printf("%s:\n", path);
-                lsdir(kind, path);
-            }
-        }
-        else
-        {
-            printf("%s:\n", path);
-            lsfile(kind, path);
-        }
+        dealpath(kind, path);
         printf("\n");
         maxlen = 0;
         rlen = MAXCHAR;
     }
-    if (pathnumber == 0)
-    {
-        memset(path, 0, sizeof(path));
-        memset(&a, 0, sizeof(struct stat));
-        strcpy(path, "./");
-        if (stat(path, &a) == -1)
-            myerror("stat", __LINE__);
-
-        if (S_ISDIR(a.st_mode))
-        {
-            if (path[strlen(path) - 1] != '/')
-            {
-                path[strlen(path)] = '/';
-                path[strlen(path) + 1] = '\0';
-            }
-            lsdir(kind, path);
-        }
-        else
-        {
-            lsfile(kind, path);
-        }
-    }
-
     return 0;
 }

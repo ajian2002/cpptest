@@ -11,7 +11,7 @@
 #include <pwd.h>
 #include <time.h>
 #include <linux/limits.h>
-#include <color.h>
+#include "./color.h"
 #define MAXFILES 51200
 #define MAXCHAR 120
 #define LSNONE 0

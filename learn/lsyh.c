@@ -12,7 +12,7 @@
 #include <time.h>
 #include <linux/limits.h>
 #include "./color.h"
-#define MAXFILES 51200
+#define MAXFILES 5120
 #define MAXCHAR 120
 #define LSNONE 0
 #define LSA 1
@@ -378,7 +378,7 @@ void lsdir(int kind, char *path)
     struct dirent *p = NULL;
     int count = 0;
 
-    char*filename[MAXFILES];
+    char *filename[MAXFILES];
 
     for (int i = 0; i < MAXFILES; i++)
     {
@@ -526,8 +526,8 @@ void geteverydir(int kind, char *path)
         {
             for (int i = 0; i < MAXFILES; i++)
                 free(filename[i]);
-myerror("readdir", __LINE__);
-        }    
+            myerror("readdir", __LINE__);
+        }
         if (strcmp(p->d_name, "..") == 0)
         {
             memset(filename[i], 0, PATH_MAX);

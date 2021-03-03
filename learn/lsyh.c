@@ -12,7 +12,7 @@
 #include <time.h>
 #include <linux/limits.h>
 #include <color.h>
-#define MAXFILES 512
+#define MAXFILES 51200
 #define MAXCHAR 120
 #define LSNONE 0
 #define LSA 1
@@ -61,7 +61,7 @@ int rlen = MAXCHAR; //本行剩余长度
 int maxlen;         //最长文件名长度
 
 //快排
-void strqsort(char before[][PATH_MAX], int now[], int l, int r)
+void strqsort(char *before[PATH_MAX], int now[], int l, int r)
 {
     int j = l, k = r;
     if (l < r)
@@ -378,14 +378,21 @@ void lsdir(int kind, char *path)
     struct dirent *p = NULL;
     int count = 0;
 
-    char filename[MAXFILES][PATH_MAX];
-    for (int i = 0; i < MAXFILES; i++)
-        memset(filename[i], 0, PATH_MAX);
+    char*filename[MAXFILES];
 
+    for (int i = 0; i < MAXFILES; i++)
+    {
+        filename[i] = (char *)malloc(sizeof(char) * PATH_MAX);
+        memset(filename[i], 0, PATH_MAX);
+    }
     //获得最长文件名
     dir = opendir(path);
     if (dir == NULL)
+    {
+        for (int i = 0; i < MAXFILES; i++)
+            free(filename[i]);
         myerror("opendir", __LINE__);
+    }
     while ((p = readdir(dir)) != NULL)
     {
         if (maxlen < strlen(p->d_name))
@@ -398,8 +405,11 @@ void lsdir(int kind, char *path)
     closedir(dir);
 
     if (count > MAXFILES)
+    {
+        for (int i = 0; i < MAXFILES; i++)
+            free(filename[i]);
         myerror("two many files", __LINE__);
-
+    }
     //存储文件名 path+name
     dir = opendir(path);
     if (dir == NULL)
@@ -426,7 +436,8 @@ void lsdir(int kind, char *path)
     //状态转移
     for (int i = 0; i < count; i++)
         lsfile(kind, (char *)(filename[teemp[i]]));
-
+    for (int i = 0; i < MAXFILES; i++)
+        free(filename[i]);
     //没有-l就换行
     if (!(kind & LSL))
     {
@@ -469,16 +480,20 @@ void geteverydir(int kind, char *path)
     int dircount = 0;
     int hidedircount = 0;
     int rightcount = 0;
-    char filename[MAXFILES][PATH_MAX];
-
+    char *filename[MAXFILES];
     memset(&a, 0, sizeof(struct stat));
-    for (int i = 0; i < MAXFILES; i++)
-        memset(filename[i], 0, PATH_MAX);
 
+    for (int i = 0; i < MAXFILES; i++)
+    {
+        filename[i] = (char *)malloc(sizeof(char) * PATH_MAX);
+        memset(filename[i], 0, PATH_MAX);
+    }
     dir = opendir(path);
     if (dir == NULL)
     {
         printf("%s\n", path);
+        for (int i = 0; i < MAXFILES; i++)
+            free(filename[i]);
         myerror("opendir ", __LINE__);
     }
     while ((p = readdir(dir)) != NULL)
@@ -491,17 +506,28 @@ void geteverydir(int kind, char *path)
     }
     closedir(dir);
     if (count > MAXFILES)
+    {
+        for (int i = 0; i < MAXFILES; i++)
+            free(filename[i]);
         myerror("two many files", __LINE__);
-
+    }
     dir = opendir(path);
     if (dir == NULL)
+    {
+        for (int i = 0; i < MAXFILES; i++)
+            free(filename[i]);
         myerror("opendir", __LINE__);
+    }
     int lenpath = strlen(path);
     for (int i = 0; i < count; i++)
     {
         p = readdir(dir);
         if (p == NULL)
-            myerror("readdir", __LINE__);
+        {
+            for (int i = 0; i < MAXFILES; i++)
+                free(filename[i]);
+myerror("readdir", __LINE__);
+        }    
         if (strcmp(p->d_name, "..") == 0)
         {
             memset(filename[i], 0, PATH_MAX);
@@ -531,7 +557,7 @@ void geteverydir(int kind, char *path)
                 hidedircount++;
                 if (!(kind & LSA)) //要隐藏
                 {
-                    memset(&filename[i], 0, PATH_MAX);
+                    memset(filename[i], 0, PATH_MAX);
                     continue;
                 }
             }
@@ -583,6 +609,8 @@ void geteverydir(int kind, char *path)
             printf("\n");
         }
     }
+    for (int i = 0; i < MAXFILES; i++)
+        free(filename[i]);
     printf("\n");
 
     //printf("geteverydir over \n\n\n\n");

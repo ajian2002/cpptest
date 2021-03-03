@@ -256,10 +256,10 @@ void isrightfile(char *fakepath)
     struct stat a;
     memset(&a, 0, sizeof(struct stat));
     //目录补全   正误勘别
-    if (stat(fakepath, &a) == -1)
+    if (lstat(fakepath, &a) == -1)
     {
         printf("%s:\n", fakepath);
-        myerror("stat", __LINE__);
+        myerror("lstat", __LINE__);
     }
     if (S_ISDIR(a.st_mode))
     {
@@ -346,7 +346,7 @@ void lsfile(int kind, char *name)
     strncpy(temp, &nfilename[wei], strlen(nfilename) - wei);
     temp[strlen(nfilename) - wei] = '\0';
 
-    stat(nfilename, &st);
+    lstat(nfilename, &st);
     char colorkind = ' ';
 
     //确定显示方式  l
@@ -548,7 +548,7 @@ myerror("readdir", __LINE__);
         filename[i][lenpath + strlen(p->d_name)] = '\0';
 
         memset(&a, 0, sizeof(struct stat));
-        stat(filename[i], &a);
+        lstat(filename[i], &a);
         if (S_ISDIR(a.st_mode))
         {
             dircount++; //无. ..
@@ -621,10 +621,10 @@ void dealpath(int kind, char *path)
 {
     struct stat a;
     memset(&a, 0, sizeof(struct stat));
-    if (stat(path, &a) == -1)
+    if (lstat(path, &a) == -1)
     {
         printf("%s:\n", path);
-        myerror("stat", __LINE__);
+        myerror("lstat", __LINE__);
     }
     if (S_ISDIR(a.st_mode))
     {

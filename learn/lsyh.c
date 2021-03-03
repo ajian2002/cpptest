@@ -124,7 +124,12 @@ char lenname(struct stat a)
     struct passwd *p;
     struct group *g;
     char mtime[32];
-
+    p = getpwuid(a.st_uid);
+    g = getgrgid(a.st_gid);
+    if (p == NULL || g == NULL)
+    {
+        return 'n';
+    }
     //文件类型
     if (1)
     {
@@ -231,8 +236,7 @@ char lenname(struct stat a)
     printf("%4ld  ", a.st_nlink);
 
     //uid gid
-    p = getpwuid(a.st_uid);
-    g = getgrgid(a.st_gid);
+
     printf("%-8s ", p->pw_name);
     printf("%-8s ", g->gr_name);
 
@@ -353,6 +357,8 @@ void lsfile(int kind, char *name)
     if (kind & LSL)
     {
         colorkind = lenname(st);
+        if(colorkind=='n')
+        continue;
         //彩色打印
         if (colorkind == 'd')
             printf(L_BLUE "%s\n" NONE, temp);

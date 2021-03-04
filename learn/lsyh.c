@@ -11,14 +11,16 @@
 #include <pwd.h>
 #include <time.h>
 #include <linux/limits.h>
-#include "./color.h"
-#define MAXFILES 5120
+#include "/home/ajian/code/cpptest/learn/color.h"
+#define MAXFILES 51200
 #define MAXCHAR 120
 #define LSNONE 0
 #define LSA 1
 #define LSL 2
 #define LSI 4
 #define LSR 8
+//#define filei (*(char**)(filename + i * sizeof(char *)))
+//#define fileti (*(char**)(filename +  sizeof(char *)*teemp[i]))
 //-a -l 目录蓝色 已支持  //-i  未完成 -R 未完成
 
 //快排  字符串索引排序 已优化
@@ -31,6 +33,24 @@ void myerror(const char *error_string, int line)
     fprintf(stderr, "line:%d   ", line);
     perror(error_string);
     exit(1);
+}
+void color_print(char *colorkind, char *name)
+{
+    //彩色打印
+    if (strcmp(colorkind, "blue") == 0)
+    {
+        printf(BLUE "%-s" NONE, name);
+    }
+    else if (strcmp(colorkind, "white") == 0)
+    {
+        printf("%-s", name);
+    }
+    else if (strcmp(colorkind, "lightblue") == 0)
+    {
+        printf(L_BLUE "%-s" NONE, name);
+    }
+
+    memset(colorkind, 0, 20);
 }
 
 //struct stat
@@ -59,6 +79,7 @@ S_ISSOCK(mode)//是否为socket
 
 int rlen = MAXCHAR; //本行剩余长度
 int maxlen;         //最长文件名长度
+char colorkind[20] = {0};
 
 //快排
 void strqsort(char *before[PATH_MAX], int now[], int l, int r)
@@ -87,7 +108,7 @@ void strqsort(char *before[PATH_MAX], int now[], int l, int r)
 }
 
 // 列出一个文件名字
-void singlename(char *name, char colorkind)
+void singlename(struct stat a, char *name)
 {
 
     //判断本行是否足够打印
@@ -96,16 +117,25 @@ void singlename(char *name, char colorkind)
         printf("\n");
         rlen = MAXCHAR;
     }
+    //确定颜色
 
-    //彩色打印
-    if (colorkind == 'd')
-    {
-        printf(L_BLUE "%-s" NONE, name);
-    }
-    else
-    {
-        printf("%-s", name);
-    }
+    //文件类型
+    if (S_ISDIR(a.st_mode))
+        strcpy(colorkind, "blue");
+    else if (S_ISREG(a.st_mode))
+        strcpy(colorkind, "white");
+    else if (S_ISLNK(a.st_mode))
+        strcpy(colorkind, "lightblue");
+    else if (S_ISCHR(a.st_mode))
+        strcpy(colorkind, "blue");
+    else if (S_ISBLK(a.st_mode))
+        strcpy(colorkind, "blue");
+    else if (S_ISFIFO(a.st_mode))
+        strcpy(colorkind, "blue");
+    else if (S_ISSOCK(a.st_mode))
+        strcpy(colorkind, "blue");
+
+    color_print(colorkind, name);
 
     //空格补齐
     int kong = maxlen - strlen(name);
@@ -119,7 +149,7 @@ void singlename(char *name, char colorkind)
 }
 
 // -l打印一行  没有名字
-char lenname(struct stat a)
+void lenname(struct stat a)
 {
     struct passwd *p;
     struct group *g;
@@ -128,8 +158,9 @@ char lenname(struct stat a)
     g = getgrgid(a.st_gid);
     if (p == NULL || g == NULL)
     {
-        return 'n';
+        myerror("p||g is NULL\n", __LINE__);
     }
+
     //文件类型
     if (1)
     {
@@ -241,18 +272,15 @@ char lenname(struct stat a)
     printf("%-8s ", g->gr_name);
 
     //size
-    printf("%-6ld ", a.st_size);
+    printf("%-8ld ", a.st_size);
 
     //mtime
     strcpy(mtime, ctime(&a.st_mtime)); //mon jan 25 23:35:09 2021\n\0
     mtime[strlen(mtime) - 1] = '\0';
     printf("%s  ", mtime);
 
-    if (S_ISDIR(a.st_mode))
-        return 'd';
-    else
-        return ' ';
 }
+
 
 //解析文件路径并修正
 void isrightfile(char *fakepath)
@@ -351,31 +379,17 @@ void lsfile(int kind, char *name)
     temp[strlen(nfilename) - wei] = '\0';
 
     lstat(nfilename, &st);
-    char colorkind = ' ';
 
     //确定显示方式  l
     if (kind & LSL)
     {
-        colorkind = lenname(st);
-        if(colorkind=='n')
-        continue;
-        //彩色打印
-        if (colorkind == 'd')
-            printf(L_BLUE "%s\n" NONE, temp);
-        else
-            printf("%s\n", temp);
+        lenname(st);
+        singlename(st, temp);
+        printf("\n");
+        rlen=MAXCHAR;
     }
-    else
-    {
-        if (S_ISDIR(st.st_mode))
-        {
-            colorkind = 'd';
-        }
-        //色彩传递,彩色打印
-        singlename(temp, colorkind);
-    }
+    else singlename(st, temp);
 }
-
 //对目录处理
 void lsdir(int kind, char *path)
 {
@@ -383,54 +397,50 @@ void lsdir(int kind, char *path)
     DIR *dir;
     struct dirent *p = NULL;
     int count = 0;
-
-    char *filename[MAXFILES];
-
-    for (int i = 0; i < MAXFILES; i++)
-    {
-        filename[i] = (char *)malloc(sizeof(char) * PATH_MAX);
-        memset(filename[i], 0, PATH_MAX);
-    }
     //获得最长文件名
     dir = opendir(path);
     if (dir == NULL)
     {
-        for (int i = 0; i < MAXFILES; i++)
-            free(filename[i]);
-        myerror("opendir", __LINE__);
+        perror("opendir ");
+        return;
+        //myerror("opendir", __LINE__);
     }
     while ((p = readdir(dir)) != NULL)
     {
         if (maxlen < strlen(p->d_name))
-        {
             maxlen = strlen(p->d_name);
-        }
-
         count++;
     }
     closedir(dir);
-
     if (count > MAXFILES)
-    {
-        for (int i = 0; i < MAXFILES; i++)
-            free(filename[i]);
         myerror("two many files", __LINE__);
-    }
     //存储文件名 path+name
     dir = opendir(path);
     if (dir == NULL)
         myerror("opendir", __LINE__);
     int lenpath = strlen(path);
+
+    char **filename = (char **)malloc(sizeof(char *) * count);
+    if (filename == NULL)
+        myerror("malloc failed", __LINE__);
+    memset((void *)filename, 0, sizeof(char *) * count);
+    for (int i = 0; i < count; i++)
+    {
+        filename[i] = (char *)malloc(sizeof(char) * PATH_MAX);
+        if (filename[i] == NULL)
+            myerror("malloc  i failed", __LINE__);
+        memset(filename[i], 0, PATH_MAX);
+    }
+
     for (int i = 0; i < count; i++)
     {
         p = readdir(dir);
         if (p == NULL)
             myerror("readdir", __LINE__);
-
         //path+name
-        strncpy((filename[i]), path, lenpath);
+        strncpy(filename[i], path, lenpath);
         filename[i][lenpath] = '\0';
-        strcat((filename[i]), p->d_name);
+        strcat(filename[i], p->d_name);
         filename[i][lenpath + strlen(p->d_name)] = '\0';
     }
     closedir(dir);
@@ -441,13 +451,24 @@ void lsdir(int kind, char *path)
 
     //状态转移
     for (int i = 0; i < count; i++)
-        lsfile(kind, (char *)(filename[teemp[i]]));
-    for (int i = 0; i < MAXFILES; i++)
-        free(filename[i]);
+        lsfile(kind, filename[teemp[i]]);
+    for (int i = 0; i < count; i++)
+    {
+        if (filename[i])
+        {
+            free(filename[i]);
+            filename[i] = NULL;
+        }
+    }
     //没有-l就换行
     if (!(kind & LSL))
     {
         printf("\n");
+    }
+    if (filename)
+    {
+        free(filename);
+        filename = NULL;
     }
 }
 
@@ -486,21 +507,19 @@ void geteverydir(int kind, char *path)
     int dircount = 0;
     int hidedircount = 0;
     int rightcount = 0;
-    char *filename[MAXFILES];
-    memset(&a, 0, sizeof(struct stat));
-
-    for (int i = 0; i < MAXFILES; i++)
-    {
-        filename[i] = (char *)malloc(sizeof(char) * PATH_MAX);
-        memset(filename[i], 0, PATH_MAX);
-    }
+    //    char *filename[MAXFILES];
     dir = opendir(path);
-    if (dir == NULL)
+    if (dir == NULL || errno == EACCES)
     {
         printf("%s\n", path);
-        for (int i = 0; i < MAXFILES; i++)
-            free(filename[i]);
-        myerror("opendir ", __LINE__);
+        //for (int i = 0; i < MAXFILES; i++)
+        //    free(filename[i]);
+        //return;
+        //myerror("opendir ", __LINE__);
+
+        perror("opendir ");
+        errno = 0;
+        return;
     }
     while ((p = readdir(dir)) != NULL)
     {
@@ -513,27 +532,48 @@ void geteverydir(int kind, char *path)
     closedir(dir);
     if (count > MAXFILES)
     {
-        for (int i = 0; i < MAXFILES; i++)
-            free(filename[i]);
+        //for (int i = 0; i < MAXFILES; i++)
+        //    free(filename[i]);
+        //free(filename);
         myerror("two many files", __LINE__);
     }
     dir = opendir(path);
-    if (dir == NULL)
+    if (dir == NULL || errno == EACCES)
     {
-        for (int i = 0; i < MAXFILES; i++)
-            free(filename[i]);
-        myerror("opendir", __LINE__);
+        printf("%s\n", path);
+        //for (int i = 0; i < MAXFILES; i++)
+        //    free(filename[i]);
+        //return;
+        //myerror("opendir ", __LINE__);
+
+        perror("opendir ");
+        errno = 0;
+        return;
     }
     int lenpath = strlen(path);
+
+    char **filename = (char **)malloc(sizeof(char *) * count);
+    if (filename == NULL)
+    {
+        myerror("malloc ", __LINE__);
+    }
+    memset(filename, 0, sizeof(char *) * count);
+    memset(&a, 0, sizeof(struct stat));
+
+    for (int i = 0; i < count; i++)
+    {
+        filename[i] = (char *)malloc(sizeof(char) * PATH_MAX);
+        if (filename[i] == NULL)
+        {
+            myerror("malloc ", __LINE__);
+        }
+
+        memset(filename[i], 0, PATH_MAX);
+    }
+
     for (int i = 0; i < count; i++)
     {
         p = readdir(dir);
-        if (p == NULL)
-        {
-            for (int i = 0; i < MAXFILES; i++)
-                free(filename[i]);
-            myerror("readdir", __LINE__);
-        }
         if (strcmp(p->d_name, "..") == 0)
         {
             memset(filename[i], 0, PATH_MAX);
@@ -554,7 +594,17 @@ void geteverydir(int kind, char *path)
         filename[i][lenpath + strlen(p->d_name)] = '\0';
 
         memset(&a, 0, sizeof(struct stat));
-        lstat(filename[i], &a);
+
+        if (lstat(filename[i], &a) == -1 || errno == EACCES)
+        {
+
+            printf("%s\n", path);
+            //myerror("lstat", __LINE__);
+            perror("lstat");
+            errno = 0;
+            return;
+        }
+
         if (S_ISDIR(a.st_mode))
         {
             dircount++; //无. ..
@@ -598,39 +648,46 @@ void geteverydir(int kind, char *path)
         {
             continue;
         }
-        //printf("%d ", rightcount);
-        if (rightcount)
+        else if (rightcount && strlen(filename[teemp[i]]))
         {
-
             maxlen = 0;
             rlen = MAXCHAR;
             rightcount--;
-            geteverydir(kind, (char *)(filename[teemp[i]]));
+            geteverydir(kind, filename[teemp[i]]);
         }
         else
         {
-
             printf("%s\n", filename[teemp[i]]);
-            lsdir(kind, (char *)(filename[teemp[i]]));
+            lsdir(kind, filename[teemp[i]]);
             printf("\n");
         }
     }
-    for (int i = 0; i < MAXFILES; i++)
-        free(filename[i]);
+    for (int i = 0; i < count; i++)
+    {
+        if (filename[i] != NULL)
+        {
+            free(filename[i]);
+            filename[i] = NULL;
+        }
+    }
     printf("\n");
-
-    //printf("geteverydir over \n\n\n\n");
-    //没有-l就换行
+    if (filename != NULL)
+    {
+        free(filename);
+        filename = NULL;
+    }
 }
 //处理路径 解析参数 分类状态处理
 void dealpath(int kind, char *path)
 {
     struct stat a;
     memset(&a, 0, sizeof(struct stat));
-    if (lstat(path, &a) == -1)
+    if (lstat(path, &a) == -1 || errno == EACCES)
     {
         printf("%s:\n", path);
-        myerror("lstat", __LINE__);
+        perror("lstat");
+        errno = 0;
+        //myerror("lstat", __LINE__);
     }
     if (S_ISDIR(a.st_mode))
     {
@@ -700,7 +757,8 @@ int main(int argc, char **argv)
         //lsdir(kind, path);
         dealpath(kind, path);
         printf("\n");
-        free(path);
+        if (path != NULL)
+            free(path);
         return 0;
     }
 

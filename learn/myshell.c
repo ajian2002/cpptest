@@ -13,7 +13,8 @@
 #include <pwd.h>
 #include <time.h>
 #include <linux/limits.h>
-
+#define SIGNALMAX 256
+#define ARGCMAX 128
 //普通
 #define NO 0
 
@@ -39,13 +40,13 @@ void getcmd(char *buf) //获取输入
     char c;
     c = getchar();
     int len = 0;
-    while (c != '\n' && len < 256)
+    while (c != '\n' && len < SIGNALMAX)
     {
         buf[len] = c;
         len++;
         c = getchar();
     }
-    if (len == 256)
+    if (len >= SIGNALMAX)
     {
         perror(" cmd too long");
         exit(-1);
@@ -55,9 +56,8 @@ void getcmd(char *buf) //获取输入
     //buf[len]='\0';
 }
 
-void explancmd(char *buf, int *count, char list[100][256]) //解析输入
+void explancmd(char *buf, int *count, char list[ARGCMAX][SIGNALMAX]) //解析输入
 {
-    ;
     int len = strlen(buf);
     int number = 0;
     *count = 0;
@@ -124,61 +124,61 @@ int findexe(char *cmd) //找程序
     return 0;
 }
 
-void docmd(int count, char list[100][256]) //执行命令
+void docmd(int count, char list[ARGCMAX][SIGNALMAX]) //执行命令
 {
     ;
     int kind = NO;
     int inc = -1, outc = -1; //重定向定位下标
     int pipc = -1;           //管道定位下标
-    char outfile[256];
-    char infile[256];
-    char pipfile[256];
-    char next[100][256];
-char path[256]; 
+    char outfile[SIGNALMAX];
+    char infile[SIGNALMAX];
+    char pipfile[SIGNALMAX];
+    char next[ARGCMAX][SIGNALMAX];
+    char path[SIGNALMAX];
     //execvp格式
-    char *ll[256];
+    char *ll[SIGNALMAX];
     for (int i = 0; i < count; i++)
     {
         ll[i] = (char *)list[i];
     }
 
     int temp;
-    memset(infile, '\0', sizeof(char) * 256);
-    memset(outfile, '\0', sizeof(char) * 256);
-    memset(pipfile, '\0', sizeof(char) * 256);
-    memset(next, '\0', sizeof(char) * 256 * 100);
-    memset(path, '\0', sizeof(char) * 256);
+    memset(infile, '\0', sizeof(char) * SIGNALMAX);
+    memset(outfile, '\0', sizeof(char) * SIGNALMAX);
+    memset(pipfile, '\0', sizeof(char) * SIGNALMAX);
+    memset(next, '\0', sizeof(char) * SIGNALMAX * ARGCMAX);
+    memset(path, '\0', sizeof(char) * SIGNALMAX);
     if (count < 1)
         return;
-    int have=0;
+    int have = 0;
     //命令存在判断
     if (findexe(list[0]) == 0)
     {
         if (strcmp(list[0], "cd") == 0) //cd
         {
-            strcpy(path,getenv("HOME"));
+            strcpy(path, getenv("HOME"));
             if (count == 2)
             {
-                for (int i=0; i < strlen(ll[1]); i++)
+                for (int i = 0; i < strlen(ll[1]); i++)
                 {
-                    if(list[1][i]=='~')
+                    if (list[1][i] == '~')
                     {
                         memset(path, 0, sizeof(path));
-                        strncpy(path,&list[1][0],i);
-                       // puts(path);
-                        strcat(path,getenv("HOME"));
-                       //puts(path);
+                        strncpy(path, &list[1][0], i);
+                        // puts(path);
+                        strcat(path, getenv("HOME"));
+                        //puts(path);
                         //strcat(path,"/");
-                        strcat(path,&list[1][i+1]);
-                       // puts(path);
-                        strcat(path,"/");
-                        have=1;
+                        strcat(path, &list[1][i + 1]);
+                        // puts(path);
+                        strcat(path, "/");
+                        have = 1;
                     }
                 }
-                if(have!=1)
-                {  
+                if (have != 1)
+                {
                     memset(path, 0, sizeof(path));
-                    strcpy(path,ll[1]);
+                    strcpy(path, ll[1]);
                 }
             }
             else if (count == 1)
@@ -186,7 +186,7 @@ char path[256];
                 chdir(getenv("HOME"));
             }
 
-            if(strlen(path))
+            if (strlen(path))
             {
                 chdir(path);
             }
@@ -282,8 +282,8 @@ char path[256];
         if (list[inc][1] == '\0')
         {
             strcpy(infile, list[inc + 1]);
-            memset(list[inc], '\0', 256);
-            memset(list[inc + 1], '\0', 256);
+            memset(list[inc], '\0', SIGNALMAX);
+            memset(list[inc + 1], '\0', SIGNALMAX);
         }
         else
         {
@@ -291,7 +291,7 @@ char path[256];
             temp = strlen(infile);
             memmove(infile, &infile[1], temp - 1);
             infile[temp - 1] = '\0';
-            memset(list[inc], '\0', 256);
+            memset(list[inc], '\0', SIGNALMAX);
         }
     }
     if (kind & OUT && outc != -1)
@@ -299,8 +299,8 @@ char path[256];
         if (list[outc][1] == '\0')
         {
             strcpy(outfile, list[outc + 1]);
-            memset(list[outc], '\0', 256);
-            memset(list[outc + 1], '\0', 256);
+            memset(list[outc], '\0', SIGNALMAX);
+            memset(list[outc + 1], '\0', SIGNALMAX);
         }
         else
         {
@@ -308,7 +308,7 @@ char path[256];
             temp = strlen(outfile);
             memmove(outfile, &outfile[1], temp - 1);
             outfile[temp - 1] = '\0';
-            memset(list[outc], '\0', 256);
+            memset(list[outc], '\0', SIGNALMAX);
         }
     }
 
@@ -317,8 +317,8 @@ char path[256];
         if (list[pipc][1] == '\0')
         {
             strcpy(pipfile, list[pipc + 1]);
-            memset(list[pipc], '\0', 256);
-            memset(list[pipc + 1], '\0', 256);
+            memset(list[pipc], '\0', SIGNALMAX);
+            memset(list[pipc + 1], '\0', SIGNALMAX);
             pipc += 2;
         }
         else
@@ -327,7 +327,7 @@ char path[256];
             temp = strlen(pipfile);
             memmove(pipfile, &pipfile[1], temp - 1);
             pipfile[temp - 1] = '\0';
-            memset(list[pipc], '\0', 256);
+            memset(list[pipc], '\0', SIGNALMAX);
             pipc += 1;
         }
 
@@ -372,7 +372,7 @@ char path[256];
                 perror("fork failed");
                 exit(-1);
             }
-            else if (pid2 == 0) //sunzi
+            else if (pid2 == 0) //child
             {
                 fd2 = open("/tmp/temp", O_WRONLY | O_CREAT | O_TRUNC, 0644);
                 dup2(fd2, 1);
@@ -382,14 +382,14 @@ char path[256];
 
             if (waitpid(pid2, NULL, 0) == -1)
                 printf("wait for cmd2 error\n");
-            fd2 = open('/tmp/temp', O_RDONLY);
+            fd2 = open("/tmp/temp", O_RDONLY);
             dup2(fd2, 0);
             if (findexe(next[0]) == 0)
             {
                 perror("can't find cmd2");
                 exit(-1);
             }
-            execvp(next[0], next);
+            execvp(next[0], ll);
             if (remove("/tmp/temp"))
                 printf("remove error");
             exit(0);
@@ -446,12 +446,12 @@ int main(int argc, char **argv, char **environ)
 {
     //屏蔽ctrl+c
     signal(SIGINT, SIG_IGN);
-    
-    char list[100][256];
+
+    char list[ARGCMAX][SIGNALMAX];
     int count = 0;
-    
+
     char *buf = NULL;
-    buf = (char *)malloc(sizeof(char) * 256);
+    buf = (char *)malloc(sizeof(char) * SIGNALMAX);
     if (buf == NULL)
     {
         perror("malloc failed");
@@ -460,17 +460,17 @@ int main(int argc, char **argv, char **environ)
 
     while (1)
     {
-        memset(buf, 0, sizeof(char) * 256);
+        memset(buf, 0, sizeof(char) * SIGNALMAX);
 
         prin4(); //命令提示符
 
-        getcmd(buf); //获取cmd
+        getcmd(buf); //getch获取cmd
 
         //判断登出
         if (strcmp(buf, "exit\n") == 0 || strcmp(buf, "logout\n") == 0)
             break;
 
-        memset(list, '\0', sizeof(char) * 256 * 100);
+        memset(list, '\0', sizeof(char) * SIGNALMAX * ARGCMAX);
         count = 0;
         explancmd(buf, &count, list); //解析cmd
 

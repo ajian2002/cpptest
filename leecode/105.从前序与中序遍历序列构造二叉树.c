@@ -87,7 +87,7 @@ struct TreeNode *buildTree(int *preorder, int preorderSize, int *inorder, int in
             else break;
         }
         
-        //printf("%d:ll %d  rr %d\n",inorder[wei], ll, rr);
+        printf("%d:ll %d  rr %d\n",inorder[wei], ll, rr);
 
         if(ll>0)
         {

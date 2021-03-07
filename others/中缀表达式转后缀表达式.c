@@ -13,7 +13,7 @@ int main(void)
 	char *s2 = (char *)malloc(sizeof(char) * LEN);
 	memset(s2, 0, sizeof(char) * LEN);
 	infix_to_suffix(s1,s2);
-	calculation()
+	calculation();
 	free(s1);
 	free(s2);
 	return 0;

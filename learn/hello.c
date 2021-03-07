@@ -1,6 +1,6 @@
-#include "hello.h"
+
 #include <stdio.h>
-void hello(char *s)
+int main()
 {
     printf("hello %s\n", s);
 }

@@ -2,18 +2,21 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
 #include <string.h>
 #include <dirent.h>
+#include <pthread.h>
 #include <grp.h>
 #include <pwd.h>
 #include <time.h>
+#include <signal.h>
 #include <linux/limits.h>
 #include "/home/ajian/code/cpptest/learn/color.h"
 #define MAXFILES 51200
-#define MAXCHAR 120
+#define MAXCHAR 80
 #define LSNONE 0
 #define LSA 1
 #define LSL 2
@@ -278,9 +281,7 @@ void lenname(struct stat a)
     strcpy(mtime, ctime(&a.st_mtime)); //mon jan 25 23:35:09 2021\n\0
     mtime[strlen(mtime) - 1] = '\0';
     printf("%s  ", mtime);
-
 }
-
 
 //解析文件路径并修正
 void isrightfile(char *fakepath)
@@ -386,9 +387,10 @@ void lsfile(int kind, char *name)
         lenname(st);
         singlename(st, temp);
         printf("\n");
-        rlen=MAXCHAR;
+        rlen = MAXCHAR;
     }
-    else singlename(st, temp);
+    else
+        singlename(st, temp);
 }
 //对目录处理
 void lsdir(int kind, char *path)
@@ -717,7 +719,11 @@ int main(int argc, char **argv)
     //struct stat a;
     //int mode[250] = {0};
     //char temppath[PATH_MAX];
-
+    
+    
+    //实现ctrl+c处理
+    signal(SIGINT, SIG_IGN);
+    
     //解析kind  -laR
     for (int i = 1; i < argc; i++)
     {

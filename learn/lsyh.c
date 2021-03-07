@@ -14,7 +14,7 @@
 #include <time.h>
 #include <signal.h>
 #include <linux/limits.h>
-#include "/home/ajian/code/cpptest/learn/color.h"
+//#include "/home/ajian/code/cpptest/learn/color.h"
 #define MAXFILES 51200
 #define MAXCHAR 80
 #define LSNONE 0
@@ -42,7 +42,11 @@ void color_print(char *colorkind, char *name)
     //彩色打印
     if (strcmp(colorkind, "blue") == 0)
     {
-        printf(BLUE "%-s" NONE, name);
+        //printf(BLUE "%-s" NONE, name);
+        printf("\e[0;34m"
+               "%-s"
+               "\e[0m",
+               name);
     }
     else if (strcmp(colorkind, "white") == 0)
     {
@@ -50,7 +54,10 @@ void color_print(char *colorkind, char *name)
     }
     else if (strcmp(colorkind, "lightblue") == 0)
     {
-        printf(L_BLUE "%-s" NONE, name);
+        printf("\e[1;34m"
+               "%-s"
+               "\e[0m",
+               name);
     }
 
     memset(colorkind, 0, 20);

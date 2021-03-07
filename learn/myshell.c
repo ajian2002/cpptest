@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <signal.h>
 #include <dirent.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -446,6 +447,8 @@ int main(int argc, char **argv, char **environ)
     char *buf = NULL;
     char list[100][256];
     int count = 0;
+    //屏蔽ctrl+c
+    signal(SIGINT, SIG_IGN);
     buf = (char *)malloc(sizeof(char) * 256);
     if (buf == NULL)
     {

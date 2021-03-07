@@ -1,3 +1,24 @@
+## 注意事项
+
+//目前已完成
+
+// -a -l -R 随机组合(包括-R 根目录)
+
+//目录蓝色 普通文件白色 链接文件浅蓝色
+
+//文件名称快速排序顺序显示
+
+//实现输出格式对齐
+
+//原理为字符串拼接
+
+//屏蔽 ctrl+c
+
+//将编译得到的可执行文件放置于/usr/bin/目录下即可在任何目录下使用本命令
+
+# 正文
+
+```c
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -812,3 +833,4 @@ int main(int argc, char **argv)
     free(path);
     return 0;
 }
+```

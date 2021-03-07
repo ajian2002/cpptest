@@ -444,11 +444,13 @@ char path[256];
 
 int main(int argc, char **argv, char **environ)
 {
-    char *buf = NULL;
-    char list[100][256];
-    int count = 0;
     //屏蔽ctrl+c
     signal(SIGINT, SIG_IGN);
+    
+    char list[100][256];
+    int count = 0;
+    
+    char *buf = NULL;
     buf = (char *)malloc(sizeof(char) * 256);
     if (buf == NULL)
     {
@@ -458,7 +460,7 @@ int main(int argc, char **argv, char **environ)
 
     while (1)
     {
-        memset(buf, '\0', sizeof(char) * 256);
+        memset(buf, 0, sizeof(char) * 256);
 
         prin4(); //命令提示符
 
@@ -476,8 +478,8 @@ int main(int argc, char **argv, char **environ)
         //printf("father over\n");
     }
 
-    if (buf != NULL)
+    if (buf)
         free(buf);
 
-    exit(0);
+    return 0;
 }

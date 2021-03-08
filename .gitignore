@@ -1,8 +1,9 @@
 *
+python/Python-100-Days/
 !*.c
 !*.h
 !*.cpp
 !*.py
 !*.md
 !/**/
-python/Python-100-Days/
+

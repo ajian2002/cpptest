@@ -13,11 +13,14 @@ void *init_stack(int frist)
     {
         S->data = frist;
         S->next = NULL;
-
+        printf("pop %d\n",frist);
         return S;
     }
     else
+    {
         printf(" creat ERROR\n");
+        exit(1);
+    }
 }
 void del_stack(struct linkstack *S)
 {
@@ -39,13 +42,13 @@ void pop_stack(struct linkstack *S)
         int temp = S->next->data;
         free(S->next);
         S->next = NULL;
-        return temp;
+        printf("pop %d\n", temp);
     }
     else if (S)
     {
         int temp = S->data;
         free(S);
-        return temp;
+        printf("pop %d\n", temp);
     }
     else
     {
@@ -64,6 +67,7 @@ void push_stack(struct linkstack *S, int elem)
         temp->next = NULL;
         temp1->next = temp;
     }
+    printf("push %d\n",elem);
 }
 void see_stack(struct linkstack *S)
 {

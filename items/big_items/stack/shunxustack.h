@@ -46,7 +46,7 @@ int get_top(shunstack *S)
     {
         printf("\r栈空");
         return -1;
-    }
+    }return 0;
 }
 //入栈
 void push_stack(shunstack *S, int elem)

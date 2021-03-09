@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #define DEBUGPRINT
-#undef DEBUGPRINT
+//#undef DEBUGPRINT
 #include "debug.info.h"
 
 int main()

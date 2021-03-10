@@ -14,6 +14,10 @@
 #include <time.h>
 #include <signal.h>
 #include <linux/limits.h>
+//#define DEBUG
+#define MYERROR
+#include "debug.info.h"
+
 #define MAXFILES 51200
 #define MAXCHAR 80
 #define LSNONE 0
@@ -21,6 +25,7 @@
 #define LSL 2
 #define LSI 4
 #define LSR 8
+
 //目前已完成
 // -a -l -R 随机组合(包括-R根目录)
 //目录蓝色 普通文件白色 链接文件浅蓝色
@@ -30,13 +35,14 @@
 //屏蔽ctrl+c
 //将编译得到的可执行文件放置于/usr/bin/目录下即可在任何目录下使用本命令
 
+//1.替代,,myerror  -->PRINTEXIT
 //seeerorr
-void myerror(const char *error_string, int line)
+/*void myerror(const char *error_string, int line)
 {
     fprintf(stderr, "line:%d   ", line);
     perror(error_string);
     exit(1);
-}
+}*/
 void color_print(char *colorkind, char *name)
 {
     //彩色打印
@@ -48,7 +54,7 @@ void color_print(char *colorkind, char *name)
                "\e[0m",
                name);
     }
-    else if (strcmp(colorkind, "white")==0||strcmp(colorkind, "") == 0)
+    else if (strcmp(colorkind, "white") == 0 || strcmp(colorkind, "") == 0)
     {
         printf("%-s", name);
     }
@@ -167,10 +173,8 @@ void lenname(struct stat a)
     p = getpwuid(a.st_uid);
     g = getgrgid(a.st_gid);
     if (p == NULL || g == NULL)
-    {
-        myerror("p||g is NULL\n", __LINE__);
-    }
-
+        PRINTEXIT("p || g is NULL ");
+        //myerror("p||g is NULL\n", __LINE__);
     //文件类型
     if (1)
     {
@@ -196,102 +200,74 @@ void lenname(struct stat a)
 
     //文件所有者权限
     if (a.st_mode & S_IRUSR)
-    {
         printf("r");
-    }
     else
-    {
         printf("-");
-    }
     if (a.st_mode & S_IWUSR)
-    {
         printf("w");
-    }
     else
-    {
         printf("-");
-    }
     if (a.st_mode & S_IXUSR)
     {
-        if (S_ISUID&a.st_mode)
+        if (S_ISUID & a.st_mode)
             printf("s");
         else
             printf("x");
     }
     else
     {
-        if (S_ISUID&a.st_mode)
+        if (S_ISUID & a.st_mode)
             printf("S");
         else
             printf("-");
     }
-
     //同组用户权限
     if (a.st_mode & S_IRGRP)
-    {
         printf("r");
-    }
     else
-    {
         printf("-");
-    }
     if (a.st_mode & S_IWGRP)
-    {
         printf("w");
-    }
     else
-    {
         printf("-");
-    }
     if (a.st_mode & S_IXGRP)
     {
-        if (S_ISGID&a.st_mode)
+        if (S_ISGID & a.st_mode)
             printf("s");
         else
             printf("x");
     }
     else
     {
-        if (S_ISGID&a.st_mode)
-
+        if (S_ISGID & a.st_mode)
             printf("S");
         else
             printf("-");
     }
-
     //其他用户权限
     if (a.st_mode & S_IROTH)
-    {
         printf("r");
-    }
     else
-    {
         printf("-");
-    }
     if (a.st_mode & S_IWOTH)
-    {
         printf("w");
-    }
     else
-    {
         printf("-");
-    }
+
     if (a.st_mode & S_IXOTH)
     {
-        if (S_ISVTX &a.st_mode)
+        if (S_ISVTX & a.st_mode)
             printf("t");
         else
             printf("x");
     }
     else
     {
-        if (S_ISVTX&a.st_mode)
-        
+        if (S_ISVTX & a.st_mode)
             printf("T");
         else
             printf("-");
     }
-
     printf("  ");
 
     //link
@@ -317,11 +293,9 @@ void isrightfile(char *fakepath)
     struct stat a;
     memset(&a, 0, sizeof(struct stat));
     //目录补全   正误勘别
-    if (lstat(fakepath, &a) == -1)
-    {
-        printf("%s:\n", fakepath);
-        myerror("lstat", __LINE__);
-    }
+    if (lstat(fakepath, &a) == -1 )
+        PRINTEXIT("%s:\nlstat", fakepath);
+        //myerror(, __LINE__);
     if (S_ISDIR(a.st_mode))
     {
         if (fakepath[strlen(fakepath) - 1] != '/')
@@ -442,23 +416,31 @@ void lsdir(int kind, char *path)
         count++;
     }
     closedir(dir);
+
     if (count > MAXFILES)
-        myerror("two many files", __LINE__);
+        PRINTEXIT("two many files");
+         //    myerror(, __LINE__);
     //存储文件名 path+name
     dir = opendir(path);
     if (dir == NULL)
-        myerror("opendir", __LINE__);
+    
+        PRINTEXIT("opendir");
+     //myerror("opendir", __LINE__);
     int lenpath = strlen(path);
 
     char **filename = (char **)malloc(sizeof(char *) * count);
     if (filename == NULL)
-        myerror("malloc failed", __LINE__);
+    
+        PRINTEXIT("malloc failed");
+     //myerror("malloc failed", __LINE__);
     memset((void *)filename, 0, sizeof(char *) * count);
     for (int i = 0; i < count; i++)
     {
         filename[i] = (char *)malloc(sizeof(char) * PATH_MAX);
         if (filename[i] == NULL)
-            myerror("malloc  i failed", __LINE__);
+        
+            PRINTEXIT("malloc i failed");
+         //myerror("malloc  i failed", __LINE__);
         memset(filename[i], 0, PATH_MAX);
     }
 
@@ -466,7 +448,7 @@ void lsdir(int kind, char *path)
     {
         p = readdir(dir);
         if (p == NULL)
-            myerror("readdir", __LINE__);
+            PRINTEXIT("readdir");
         //path+name
         strncpy(filename[i], path, lenpath);
         filename[i][lenpath] = '\0';
@@ -561,12 +543,12 @@ void geteverydir(int kind, char *path)
     }
     closedir(dir);
     if (count > MAXFILES)
-    {
+    
         //for (int i = 0; i < MAXFILES; i++)
         //    free(filename[i]);
         //free(filename);
-        myerror("two many files", __LINE__);
-    }
+        PRINTEXIT("two many files");
+    
     dir = opendir(path);
     if (dir == NULL || errno == EACCES)
     {
@@ -584,9 +566,9 @@ void geteverydir(int kind, char *path)
 
     char **filename = (char **)malloc(sizeof(char *) * count);
     if (filename == NULL)
-    {
-        myerror("malloc ", __LINE__);
-    }
+    
+        PRINTEXIT("malloc ");
+
     memset(filename, 0, sizeof(char *) * count);
     memset(&a, 0, sizeof(struct stat));
 
@@ -594,9 +576,8 @@ void geteverydir(int kind, char *path)
     {
         filename[i] = (char *)malloc(sizeof(char) * PATH_MAX);
         if (filename[i] == NULL)
-        {
-            myerror("malloc ", __LINE__);
-        }
+            PRINTEXIT("malloc ");
+
 
         memset(filename[i], 0, PATH_MAX);
     }
@@ -773,7 +754,8 @@ int main(int argc, char **argv)
                 }
                 else
                 {
-                    myerror("不支持的参数", __LINE__);
+                    PRINTEXIT("不支持的参数");
+                    //myerror("不支持的参数", __LINE__);
                 }
             }
         }

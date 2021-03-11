@@ -16,7 +16,7 @@
 #include <linux/limits.h>
 //#define DEBUG
 #define MYERROR
-#include "debug.info.h"
+#include <debug.info.h>
 
 #define MAXFILES 51200
 #define MAXCHAR 80

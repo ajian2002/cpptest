@@ -6,7 +6,7 @@
 
 #define DEBUG
 //#undef DEBUGPRINT
-#include "debug.info.h"
+#include <my/debug.info.h>
 
 int main()
 {

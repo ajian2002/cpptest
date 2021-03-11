@@ -1,24 +1,29 @@
 #include <stdlib.h>
 #include <stdio.h>
-#define MYERROR
+#include <time.h>
+#include <sys/time.h>
+#include <unistd.h>
+
+#define DEBUG
 //#undef DEBUGPRINT
 #include "debug.info.h"
 
 int main()
 {
-  char*s="abc";
-  //DEBUG("123");
-  //
-  if (1)
-  PRINTEXIT("p || g is NULL \n");
-  
-  
-  //PRINTEXIT("%s", s);
-  //printf("%s\n");
+	char *s = "abc";
+	//  DEBUGPRINT("123");
+	//DEBUGPRINT("%s", s);
+	//
+	if (1)
 
-  
-  //s[0] = '\0';
-  //printf("%s\n", s);
-	
-  return 0;
+		WRITE_LOG("log","123%s""\n",s);
+	//PRINTEXIT("p || g is NULL \n");
+
+	//PRINTEXIT("%s", s);
+	//printf("%s\n");
+
+	//s[0] = '\0';
+	//printf("%s\n", s);
+
+	return 0;
 }

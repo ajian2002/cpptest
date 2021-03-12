@@ -31,7 +31,10 @@ class GuessMachine(object):
             self._hint = '恭喜你猜对了'
             return True
         return False
-
+    
+    def __repr__(self):
+        return f'{self.name}: {self.age}'
+    
     @property
     def counter(self):
         return self._counter

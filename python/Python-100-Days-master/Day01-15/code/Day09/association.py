@@ -32,7 +32,7 @@ class Point(object):
         return '(%s, %s)' % (str(self._x), str(self._y))
 
 
-class Line(object):
+class Line(object): 
 
     def __init__(self, start=Point(0, 0), end=Point(0, 0)):
         self._start = start

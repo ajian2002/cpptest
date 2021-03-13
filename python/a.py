@@ -1,5 +1,11 @@
-import os
-path=os.path.dirname(__file__)
-with open(path+'/'+'1.txt','r') as fp:
-    wx=fp.read().rstrip()
-print(wx)
+class MyError(RuntimeError):
+    def __init__(self, argv):
+        self.argv=argv
+
+
+try:
+    raise MyError("hello")
+
+except MyError as e:
+    print(e.argv)
+    

@@ -205,6 +205,38 @@ def main():
         return a + b > c and b + c > a and a + c > b
 ```
 
+## @classmethod 类方法
+
+```py
+class A(object):
+
+    # 属性默认为类属性（可以给直接被类本身调用）
+    num = "类属性"
+
+    # 实例化方法（必须实例化类之后才能被调用）
+    def func1(self): # self : 表示实例化类后的地址id
+        print("func1")
+        print(self)
+
+    # 类方法（不需要实例化类就可以被类本身调用）
+    @classmethod
+    def func2(cls):  # cls : 表示没用被实例化的类本身
+        print("func2")
+        print(cls)
+        print(cls.num)
+        cls().func1()
+
+    # 不传递传递默认self参数的方法（该方法也是可以直接被类调用的，但是这样做不标准）
+    def func3():
+        print("func3")
+        print(A.num) # 属性是可以直接用类本身调用的
+    
+# A.func1() 这样调用是会报错：因为func1()调用时需要默认传递实例化类后的地址id参数，如果不实例化类是无法调用的
+# 未实例化时调用
+A.func2() #显示 <class '__main__.A'>
+A.func3()
+```
+
 # 继承和多态
 
 面向对象的编程语言支持在已有类的基础上创建新类，从而减少重复代码的编写。
@@ -226,15 +258,107 @@ class Teacher(Person):
 
 如果定义一个类的时候没有指定它的父类是谁，那么`默认的父类是object类`。object 类是 Python 中的顶级类，这也就意味着`所有的类都是它的子类`，要么直接继承它，要么间接继承它。Python 语言允许多重继承，也就是说一个类可以有一个或多个父类.
 
-## @abstractmethod 包装器
+## `调用父类函数`
 
-子类必须重写(不能创建类对象,须继承重写)
+1. `父类名.函数名(self)`
+2. `super().函数名()`
+3. `super(子类名,self).函数名()`
+
+注意:`1和super不能混用`
+例
 
 ```python
-class Pet(object, metaclass=ABCMeta):
+class A(object):
+    def __init__(self):
+    print(1)
+class B(A):
+    def run(self):
+    A.__init__(self)   #第一种方法
+class C(A):
+    def run(self):
+        super().__init__()#第二种
+        super(C,self).__init__()#第三种
+```
+
+## @abstractmethod 用于继承或子类重写
+
+创建元类,子类必须重写(不能创建类对象,须继承重写)
+
+```
+使用一
+
+创建一个基类,用于其他类继承 ,本身不能创建对象
+
+使用二
+
+在类中修饰一种方法,在子类中重写方法
+```
+
+> 很显然，后续的代码不会创建 Employee 类的对象，因为我们需要的是具体的员工对象，所以这个类可以设计成专门用于继承的抽象类。Python 中没有定义抽象类的关键字，但是可以通过 abc 模块中名为 ABCMeta 的元类来定义抽象类。
+
+```python
+
+from abc import ABCMeta, abstractmethod
+class Pet(object, metaclass=ABCMeta):# 方法一
     def __init__(self,name):
         self.name=name
-    # @abstractmethod   #
+    # @abstractmethod   #方法二
     def voice(self):
         # pass
+```
+
+# 类属性的读写删除控制
+
+1.只有`@property`表示`只读`
+
+2.同时有`@property`和`@*.setter`表示`可读可写`
+
+3.同时有`@property`和 `@*.setter` 和 `@*.deleter`表示`可读可写可删除`
+
+```py
+ #下面开始定义属性，3个函数的名字要一样！
+    @property #读
+    def name(self):
+        return self.__name
+    @name.setter #写
+    def name(self,value):
+        self.__name=value
+    @name.deleter #删除
+    def name(self):
+        del self.__name
+
+a=A()
+print a.name #读
+a.name='python'  #写
+print a.name #读
+del a.name #删除
+# print a.name
+# a.name已经被删除
+# AttributeError: 'A' object has no attribute '_A__name
+```
+
+## 枚举类
+
+```
+class Suite(Enum):
+    Int,Char,Double=0,1,2
+for suite in Suite:
+    print(suite , suite.value)
+```
+
+## 运算符重载
+
+用于比较类之间大小等
+
+> 排序需要比较两个 Card`对象`大小，而`<运算符`又不能直接`作用于Card类型`，所以就出现了 TypeError 异常，异常消息为：'<' not supported between instances of 'Card' and 'Card'。
+
+Python 中要实现对<运算符的重载，需要在类中添加一个名为**lt**的魔术方法。
+
+```
+__lt__  -->  <
+__gt__  -->  >
+__le__  -->  <=
+__ge__  -->  >=
+__eq__  -->  ==
+__ne__  -->  !=
 ```

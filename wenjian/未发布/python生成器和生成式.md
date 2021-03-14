@@ -72,7 +72,7 @@ person('Jack', 24, city='Beijing', job='Engineer')
 
 
 ## filter与map函数(过滤,映射)
-```
+```py
 numbers1 = [35, 12, 8, 99, 60, 52]
 numbers2 = list(map(lambda x: x ** 2, filter(lambda x: x % 2 == 0, numbers1)))
 print(numbers2)    # [144, 64, 3600, 2704]
@@ -86,7 +86,7 @@ print(numbers2)    # [144, 64, 3600, 2704]
 匿名函数只能有一行代码，代码中的表达式产生的运算结果就是这个匿名函数的返回值
 
 
-```
+```py
 import operator, functools
 
 # 一行代码定义求阶乘的函数
@@ -104,4 +104,93 @@ print(is_prime(9))    # False
 
 
 
-# 装饰器
+# 装饰器(简单)
+
+## 函数
+```PY
+import time
+# 定义装饰器函数，它的参数是被装饰的函数或类
+def record_time(func):
+    # 定义一个带装饰功能（记录被装饰函数的执行时间）的函数
+    # 因为不知道被装饰的函数有怎样的参数所以使用*args和**kwargs接收所有参数
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        # 执行被装饰的函数并获取返回值
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f'{func.__name__}执行时间: {end - start:.3f}秒')
+        # 返回被装饰函数的返回值（装饰器通常不会改变被装饰函数的执行结果）
+        return result
+    
+    # 返回带装饰功能的wrapper函数
+    return wrapper
+
+@record_time  #语法糖
+def download(filename):
+    print(f'开始下载{filename}.')
+    time.sleep(random.randint(2, 6))
+    print(f'{filename}下载完成.')
+@record_time 
+def upload(filename):
+    print(f'开始上传{filename}.')
+    time.sleep(random.randint(4, 8))
+    print(f'{filename}上传完成.')
+
+download('MySQL从删库到跑路.avi')
+upload('Python从入门到住院.pdf')
+```
+>事实上，被装饰后的download和upload函数是我们在装饰器record_time中返回的wrapper函数，调用它们其实就是在调用wrapper函数，所以拥有了记录函数执行时间的功能。
+
+>语法糖相当于
+`download = record_time(download)`
+
+
+### 加一个装饰开关
+
+`被装饰fun.\_\_wrapped\_\_(*args)`
+```py
+'''省略'''
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+'''省略'''
+# 使用装饰器
+download('MySQL从删库到跑路.avi')
+upload('Python从入门到住院.pdf')
+# 取消装饰器
+download.__wrapped__('MySQL必知必会.pdf')
+upload = upload.__wrapped__
+upload('Python从新手到大师.pdf')
+```
+
+
+## 类
+如果一个类中有名为__call__的魔术方法，那么这个类的对象就可以像函数一样调用，这就意味着这个对象可以像装饰器一样工作
+```py
+class RecordTime:
+    
+    def __call__(self, func):
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            start = time.time()
+            result = func(*args, **kwargs)
+            end = time.time()
+            print(f'{func.__name__}执行时间: {end - start:.3f}秒')
+            return result
+
+        return wrapper
+
+# 使用装饰器语法糖添加装饰器
+@RecordTime()
+def download(filename):
+    print(f'开始下载{filename}.')
+    time.sleep(random.randint(2, 6))
+    print(f'{filename}下载完成.')
+
+
+# 直接创建对象并调用对象传入被装饰的函数
+# 调用构造器创建对象的语法
+upload = RecordTime()(upload)
+
+download('MySQL从删库到跑路.avi')
+```

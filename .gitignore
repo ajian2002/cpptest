@@ -1,0 +1,15 @@
+*
+
+!*.c
+!*.h
+!*.cpp
+!*.py
+!*.md
+!/**/
+everyday/*
+.idea/
+.idea/*
+venv
+venv/*
+
+

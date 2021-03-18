@@ -23,6 +23,7 @@ int main()
 	//printf("%s\n");
 
 	//s[0] = '\0';
+	printf("%s", s);
 	//printf("%s\n", s);
 
 	return 0;

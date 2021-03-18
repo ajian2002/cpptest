@@ -15,7 +15,6 @@ int main()
 	//DEBUGPRINT("%s", s);
 	//
 	if (1)
-
 		WRITE_LOG("log","123%s""\n",s);
 	//PRINTEXIT("p || g is NULL \n");
 
@@ -24,6 +23,7 @@ int main()
 
 	//s[0] = '\0';
 	printf("%s", s);
+	
 	//printf("%s\n", s);
 
 	return 0;

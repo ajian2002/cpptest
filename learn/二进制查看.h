@@ -16,4 +16,18 @@ void printf_bin(int num) //二进制打印
         printf(" "); //每8位加个空格，方便查看
     }
     printf("\r\n");
+} 
+
+
+void printfbin(int num)
+{
+    for(int i = 31; i >=0;i--)
+    {
+        if((1<<i)&num)
+        printf("1");
+        else
+        printf("0");
+        if(i%8==0)
+        printf(" ");
+    }
 }

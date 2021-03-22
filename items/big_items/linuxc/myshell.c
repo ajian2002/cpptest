@@ -36,8 +36,7 @@
 //&后台运行
 #define BACKGROUND 8
 
-static char lastpath[PATH_MAX]={0};
-
+static char lastpath[PATH_MAX] = {0};
 
 void prin4(char *pathbuf) //    $|#
 {
@@ -71,37 +70,53 @@ void mygetcmd(char *buf) //获取输入
     //buf[len]='\0';
 }
 
-void explancmd(char *buf, int *count, char list[ARGCMAX][SIGNALMAX]) //解析输入
+int explancmd(char *buf, int *count, char list[ARGCMAX][SIGNALMAX], int *number) //解析输入
 {
     int len = strlen(buf);
-    int number = 0;
+    int length = 0;
     *count = 0;
+    char *p = NULL;
+    if ((p = strstr(buf, "&&")) != NULL)
+    {
+        len=(int)(p - buf);
+    }
     for (int i = 0; i < len; i++)
     {
         if (buf[i] == '\n') //找到换行
         {
-            if (number != 0) //命令执行
+            if (length != 0) //命令执行
             {
-                strncpy(list[*count], &buf[i - number], number);
+                strncpy(list[*count], &buf[i - length], length);
                 *count = *count + 1;
-                number = 0;
+                length = 0;
             }
             break;
         }
         else if (buf[i] == ' ')
         {
-            if (number != 0)
+            if (length != 0)
             {
-                strncpy(list[*count], &buf[i - number], number);
+                strncpy(list[*count], &buf[i - length], length);
                 *count = *count + 1;
-                number = 0;
+                length = 0;
             }
             continue;
         }
         else
         {
-            number++; //各参数长度
+            length++; //各参数长度
         }
+    }
+
+    if ((p = strstr(buf, "&&")) != NULL)
+    {
+        *number = 2;
+        return (int)(p - buf);
+    }
+    else
+    {
+        *number = 1;
+        return -1;
     }
 }
 
@@ -169,7 +184,7 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX]) //执行命令
         {
             int have = 0;
             strcpy(path, getenv("HOME"));
-            
+
             if (count == 2)
             {
                 if (strcmp(list[1], "-") == 0) //-
@@ -459,22 +474,16 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX]) //执行命令
         }
     }
 }
-inline void check()
-{
-    
-}
-
-int main(int argc, char **argv, char **environ)
+void reexec(int argc, char **argv, char **environ)
 {
     //屏蔽ctrl+c
     signal(SIGINT, SIG_IGN);
 
     //储存lastpath
-    getcwd(lastpath,PATH_MAX);
+    getcwd(lastpath, PATH_MAX);
 
     char list[ARGCMAX][SIGNALMAX];
     int count = 0;
-
     char *buf = NULL;
     buf = (char *)malloc(sizeof(char) * SIGNALMAX);
     if (buf == NULL)
@@ -482,33 +491,53 @@ int main(int argc, char **argv, char **environ)
         perror("malloc failed");
         exit(-1);
     }
-    //print4 路径
+    //print显示路径
     char *pathbuf = (char *)malloc(sizeof(char) * PATH_MAX);
     memset(pathbuf, 0, sizeof(char) * PATH_MAX);
+
     while (1)
     {
         memset(buf, 0, sizeof(char) * SIGNALMAX);
+        memset(list, 0, sizeof(char) * ARGCMAX * SIGNALMAX);
 
         prin4(pathbuf); //命令提示符
-
-        mygetcmd(buf); //getch获取cmd
+        mygetcmd(buf);  //getch获取cmd
+        int where = -1;
+        int number = 1;
 
         //判断登出
         if (strcmp(buf, "exit\n") == 0 || strcmp(buf, "logout\n") == 0)
         {
-            free(pathbuf);
-            break;
+            if (pathbuf)
+                free(pathbuf);
+            if (buf)
+                free(buf);
+            exit(EXIT_SUCCESS);
         }
-        memset(list, 0, sizeof(char) * SIGNALMAX * ARGCMAX);
-        count = 0;
-        explancmd(buf, &count, list); //解析cmd
 
+        count = 0;
+        where = explancmd(buf, &count, list, &number); //解析cmd
         docmd(count, list);
+        while (number != 1)
+        {
+            printf("\n");
+            count = 0;
+            
+            memset(list, 0, sizeof(char) * ARGCMAX * SIGNALMAX);
+            where = explancmd(&buf[where + 2], &count, list, &number);
+            where = -1;
+            docmd(count, list);
+        }
+
         printf("\n");
     }
 
     if (buf)
         free(buf);
+}
 
+int main(int argc, char **argv, char **environ)
+{
+    reexec(argc, argv, environ);
     return 0;
 }

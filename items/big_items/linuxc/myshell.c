@@ -193,8 +193,10 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX]) //执行命令
                     strcpy(path, lastpath);
                     have = 1;
                 }
+                /*
                 else
                 {
+                    改写
                     for (int i = 0; i < strlen(ll[1]); i++) //~
                     {
                         if (list[1][i] == '~')
@@ -211,7 +213,21 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX]) //执行命令
                             have = 1;
                         }
                     }
-                }
+                    
+                    char* tts=NULL;
+                    if((tts=strchr(list[1],'~'))!=NULL)
+                    {
+                        memset(path, 0, sizeof(path));
+                        strncpy(path, &list[1][0], (int)(tts - &list[1][0]));
+                        strcat(path, getenv("HOME"));
+
+                        strcat(path, tts+1);
+                        strcat(path, "/");
+                        have = 1;
+                        printf("%s\n", path);
+                    }
+                    }
+                */
                 if (have != 1) //指定普通目录
                 {
                     memset(path, 0, sizeof(path));
@@ -220,8 +236,15 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX]) //执行命令
             }
             if (strlen(path))
             {
+                char ll[PATH_MAX]={0};
+                strcpy(ll,lastpath);
                 getcwd(lastpath, PATH_MAX);
-                chdir(path);
+                // ll--lastpath(now)--path(next)
+
+                if(chdir(path)!=0)//异常参数处理
+                {
+                    strcpy(lastpath, ll);
+                }
             }
             else
             {
@@ -474,6 +497,7 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX]) //执行命令
         }
     }
 }
+
 void reexec(int argc, char **argv, char **environ)
 {
     //屏蔽ctrl+c
@@ -502,6 +526,19 @@ void reexec(int argc, char **argv, char **environ)
 
         prin4(pathbuf); //命令提示符
         mygetcmd(buf);  //getch获取cmd
+        char *tts = NULL;
+        
+        if ((tts = strchr(buf, '~')) != NULL)//替换~
+        {   char path[PATH_MAX]={0};
+            memset(path, 0, sizeof(PATH_MAX));
+            strncpy(path, buf, (int)(tts - buf));
+            strcat(path, getenv("HOME"));
+            strcat(path, tts + 1);
+            strcat(path, "/");
+            memset(buf, 0, SIGNALMAX);
+            strcpy(buf,path);
+        }
+        
         int where = -1;
         int number = 1;
 
@@ -518,8 +555,19 @@ void reexec(int argc, char **argv, char **environ)
         count = 0;
         where = explancmd(buf, &count, list, &number); //解析cmd
         docmd(count, list);
-        while (number != 1)
+        while (number != 1)//&& 
         {
+
+            //判断登出
+            if (strcmp(&buf[where + 2], "exit\n") == 0 || strcmp(&buf[where + 2], "logout\n") == 0)
+            {
+                if (pathbuf)
+                    free(pathbuf);
+                if (buf)
+                    free(buf);
+                exit(EXIT_SUCCESS);
+            }
+
             printf("\n");
             count = 0;
             
@@ -541,3 +589,7 @@ int main(int argc, char **argv, char **environ)
     reexec(argc, argv, environ);
     return 0;
 }
+
+
+
+//main -->reexec-->explain&&docmd

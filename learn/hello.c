@@ -1,17 +1,25 @@
 #include <stdio.h>
+#include <conio.h>
 
-#include <string.h>
 int main()
-{
-    char *buf = "sahhjfaf&&asdas&&s";char *p =NULL;
-    if ((p= strstr(buf, "&&")) != NULL)
-    {
-        printf("%d", (int)(p - buf));
-    }
+{ //实现读入一个字符，输出getch的返回值码
+	int ch;
+	while (1)
+	{
+		while (ch = getch()) //把得到的值赋值给ch
+		{
+			printf("%d", ch); //依次输入 a b c d ↑↓ ← →
+		}
+		printf("\n");
+	}
+	return 0;
 }
 /*
-#include <stdio.h>
+#include <readline/readline.h>
 int main()
 {
-    printf("hello %s\n", s);
-}*/
+	char *c;
+	c=readline("123");
+	printf("%s", c);
+}
+*/

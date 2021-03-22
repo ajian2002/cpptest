@@ -13,6 +13,12 @@
 #include <pwd.h>
 #include <time.h>
 #include <linux/limits.h>
+#include <unistd.h>
+
+#define DEBUG
+#define MYERROR
+#include <my/debug.info.h>
+
 #define SIGNALMAX 256
 #define ARGCMAX 128
 //普通
@@ -30,12 +36,21 @@
 //&后台运行
 #define BACKGROUND 8
 
-void prin4(void) //    $|#
+static char lastpath[PATH_MAX]={0};
+
+
+void prin4(char *pathbuf) //    $|#
 {
-    printf("myshell$ ");
+
+    getcwd(pathbuf, PATH_MAX);
+    printf("\e[1;34m"
+           "myshell in %s "
+           "\e[0m"
+           "\n$",
+           pathbuf);
 }
 
-void getcmd(char *buf) //获取输入
+void mygetcmd(char *buf) //获取输入
 {
     char c;
     c = getchar();
@@ -63,9 +78,9 @@ void explancmd(char *buf, int *count, char list[ARGCMAX][SIGNALMAX]) //解析输
     *count = 0;
     for (int i = 0; i < len; i++)
     {
-        if (buf[i] == '\n')
+        if (buf[i] == '\n') //找到换行
         {
-            if (number != 0)
+            if (number != 0) //命令执行
             {
                 strncpy(list[*count], &buf[i - number], number);
                 *count = *count + 1;
@@ -85,7 +100,7 @@ void explancmd(char *buf, int *count, char list[ARGCMAX][SIGNALMAX]) //解析输
         }
         else
         {
-            number++;
+            number++; //各参数长度
         }
     }
 }
@@ -126,68 +141,71 @@ int findexe(char *cmd) //找程序
 
 void docmd(int count, char list[ARGCMAX][SIGNALMAX]) //执行命令
 {
-    ;
     int kind = NO;
     int inc = -1, outc = -1; //重定向定位下标
     int pipc = -1;           //管道定位下标
-    char outfile[SIGNALMAX];
-    char infile[SIGNALMAX];
-    char pipfile[SIGNALMAX];
-    char next[ARGCMAX][SIGNALMAX];
-    char path[SIGNALMAX];
-    //execvp格式
-    char *ll[SIGNALMAX];
-    for (int i = 0; i < count; i++)
-    {
-        ll[i] = (char *)list[i];
-    }
 
-    int temp;
-    memset(infile, '\0', sizeof(char) * SIGNALMAX);
-    memset(outfile, '\0', sizeof(char) * SIGNALMAX);
-    memset(pipfile, '\0', sizeof(char) * SIGNALMAX);
+    //初始化清空
+    char outfile[SIGNALMAX] = {0};
+    char infile[SIGNALMAX] = {0};
+    char pipfile[SIGNALMAX] = {0};
+    char next[ARGCMAX][SIGNALMAX];
     memset(next, '\0', sizeof(char) * SIGNALMAX * ARGCMAX);
-    memset(path, '\0', sizeof(char) * SIGNALMAX);
-    if (count < 1)
+    char path[SIGNALMAX] = {0};
+    ////转换execvp格式
+    char *ll[SIGNALMAX];
+    for (int i = 0; i < SIGNALMAX; i++)
+        ll[i] = NULL;
+    for (int i = 0; i < count; i++)
+        ll[i] = (char *)list[i];
+    //
+    int temp;
+    if (count < 1) //意外
         return;
-    int have = 0;
-    //命令存在判断
-    if (findexe(list[0]) == 0)
+    //内置命令存在判断
+    if (findexe(list[0]) == 0) //找到
     {
         if (strcmp(list[0], "cd") == 0) //cd
         {
+            int have = 0;
             strcpy(path, getenv("HOME"));
+            
             if (count == 2)
             {
-                for (int i = 0; i < strlen(ll[1]); i++)
+                if (strcmp(list[1], "-") == 0) //-
                 {
-                    if (list[1][i] == '~')
+                    memset(path, 0, sizeof(path));
+                    strcpy(path, lastpath);
+                    have = 1;
+                }
+                else
+                {
+                    for (int i = 0; i < strlen(ll[1]); i++) //~
                     {
-                        memset(path, 0, sizeof(path));
-                        strncpy(path, &list[1][0], i);
-                        // puts(path);
-                        strcat(path, getenv("HOME"));
-                        //puts(path);
-                        //strcat(path,"/");
-                        strcat(path, &list[1][i + 1]);
-                        // puts(path);
-                        strcat(path, "/");
-                        have = 1;
+                        if (list[1][i] == '~')
+                        {
+                            memset(path, 0, sizeof(path));
+                            strncpy(path, &list[1][0], i);
+                            // puts(path);
+                            strcat(path, getenv("HOME"));
+                            //puts(path);
+                            //strcat(path,"/");
+                            strcat(path, &list[1][i + 1]);
+                            // puts(path);
+                            strcat(path, "/");
+                            have = 1;
+                        }
                     }
                 }
-                if (have != 1)
+                if (have != 1) //指定普通目录
                 {
                     memset(path, 0, sizeof(path));
                     strcpy(path, ll[1]);
                 }
             }
-            else if (count == 1)
-            {
-                chdir(getenv("HOME"));
-            }
-
             if (strlen(path))
             {
+                getcwd(lastpath, PATH_MAX);
                 chdir(path);
             }
             else
@@ -198,7 +216,7 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX]) //执行命令
         }
         else
         {
-            perror("can't find cmd");
+            printf("can't find cmd");
             return;
         }
     }
@@ -441,11 +459,18 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX]) //执行命令
         }
     }
 }
+inline void check()
+{
+    
+}
 
 int main(int argc, char **argv, char **environ)
 {
     //屏蔽ctrl+c
     signal(SIGINT, SIG_IGN);
+
+    //储存lastpath
+    getcwd(lastpath,PATH_MAX);
 
     char list[ARGCMAX][SIGNALMAX];
     int count = 0;
@@ -457,25 +482,29 @@ int main(int argc, char **argv, char **environ)
         perror("malloc failed");
         exit(-1);
     }
-
+    //print4 路径
+    char *pathbuf = (char *)malloc(sizeof(char) * PATH_MAX);
+    memset(pathbuf, 0, sizeof(char) * PATH_MAX);
     while (1)
     {
         memset(buf, 0, sizeof(char) * SIGNALMAX);
 
-        prin4(); //命令提示符
+        prin4(pathbuf); //命令提示符
 
-        getcmd(buf); //getch获取cmd
+        mygetcmd(buf); //getch获取cmd
 
         //判断登出
         if (strcmp(buf, "exit\n") == 0 || strcmp(buf, "logout\n") == 0)
+        {
+            free(pathbuf);
             break;
-
-        memset(list, '\0', sizeof(char) * SIGNALMAX * ARGCMAX);
+        }
+        memset(list, 0, sizeof(char) * SIGNALMAX * ARGCMAX);
         count = 0;
         explancmd(buf, &count, list); //解析cmd
 
         docmd(count, list);
-        //printf("father over\n");
+        printf("\n");
     }
 
     if (buf)

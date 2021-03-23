@@ -19,58 +19,75 @@
 #define MYERROR
 #include <my/debug.info.h>
 
+#include <readline/readline.h>
+#include <readline/history.h>
+
 #define SIGNALMAX 256
 #define ARGCMAX 128
 //普通
-#define NO 0
+#define NO 1
 
 //输出重定向
-#define OUT 1
+#define OUT 2
 
 //输入重定向
-#define IN 2
+#define IN 4
 
 //管道
-#define PIP 4
+#define PIP 8
 
 //&后台运行
-#define BACKGROUND 8
+#define BACKGROUND 16
 
 static char lastpath[PATH_MAX] = {0};
-
+#define ONLYSHOW(x) "\001" #x "\002"
 void prin4(char *pathbuf) //    $|#
 {
-
     getcwd(pathbuf, PATH_MAX);
-    printf("\e[1;34m"
+    printf("\e[0;34m"
            "myshell in %s "
            "\e[0m"
-           "\n$",
+           "\n",
            pathbuf);
 }
 
-void mygetcmd(char *buf) //获取输入
+void mygetcmd(char *buf) //获取输入&&tabline补全&&方向键&&历史记录
 {
-    char c;
-    c = getchar();
-    int len = 0;
-    while (c != '\n' && len < SIGNALMAX)
+
+    //readline输入可用左右方向移动
+    //以及自动补全
+    char *b = readline(ONLYSHOW(\e[0;31m) "$ "ONLYSHOW(\e[0m)); //在非打印字符前后加上　\001 和　\002 解决换行显示错乱问题
+    long int len = strlen(b);
+    add_history(b); //解决上下键查看历史
+
+    b[len++] = '\n';
+    b[len] = '\0';
+
+    //写入本地目录下.myshelllhistory文件
+    char ho[PATH_MAX] = {0};
+    //    printf("11ho %s   env %s\n", ho,getenv("HOME"));
+    strcpy(ho, getenv("HOME"));
+    //printf("22%s\n", ho);
+    strcat(ho, "/.myshellhistory");
+    //printf("%s\n", ho);
+    FILE *fp = fopen(ho, "a");
+    if (fp == NULL)
     {
-        buf[len] = c;
-        len++;
-        c = getchar();
-    }
-    if (len >= SIGNALMAX)
-    {
-        perror(" cmd too long");
+        perror("open history failed");
         exit(-1);
     }
+    if (fwrite(b, sizeof(char), len + 1, fp) != len + 1)
+    {
+        perror("fwrite failed");
+        exit(-1);
+    }
+    fclose(fp);
 
-    buf[len++] = '\n';
-    //buf[len]='\0';
+    strcpy(buf, b);
+    free(b);
 }
 
-int explancmd(char *buf, int *count, char list[ARGCMAX][SIGNALMAX], int *number) //解析输入
+int explancmd(char *buf, int *count, char list[ARGCMAX][SIGNALMAX], int *number) //存储输入
 {
     int len = strlen(buf);
     int length = 0;
@@ -78,7 +95,7 @@ int explancmd(char *buf, int *count, char list[ARGCMAX][SIGNALMAX], int *number)
     char *p = NULL;
     if ((p = strstr(buf, "&&")) != NULL)
     {
-        len=(int)(p - buf);
+        len = (int)(p - buf);
     }
     for (int i = 0; i < len; i++)
     {
@@ -120,18 +137,21 @@ int explancmd(char *buf, int *count, char list[ARGCMAX][SIGNALMAX], int *number)
     }
 }
 
-int findexe(char *cmd) //找程序
+int findexe(char *cmd) //找程序1 未找到0
 {
     DIR *dir;
+    int only = 3;
     char *path[] = {"./", "/usr/bin", "/bin", NULL};
     struct dirent *dp;
     if (strncmp(cmd, "./", 2) == 0)
     {
         cmd += 2;
+        only = 1;
     }
     int i = 0;
-    while (path[i] != NULL)
+    while (path[i] != NULL && only > i)
     {
+
         dir = opendir(path[i]);
         if (dir == NULL)
         {
@@ -171,14 +191,61 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX]) //执行命令
     char *ll[SIGNALMAX];
     for (int i = 0; i < SIGNALMAX; i++)
         ll[i] = NULL;
-    for (int i = 0; i < count; i++)
-        ll[i] = (char *)list[i];
-    //
+
     int temp;
     if (count < 1) //意外
         return;
-    //内置命令存在判断
-    if (findexe(list[0]) == 0) //找到
+
+    //检测kind
+    //clear list
+    for (int i = 0; i < count; i++)
+    {
+        if (strncmp(list[i], "|", 1) == 0) //PIP
+        {
+            kind |= PIP;
+            if (strcmp(list[i], "|") == 0) // | abc
+            {
+                if (i == count - 1)
+                {
+                    perror("wrong |");
+                    exit(-1);
+                }
+
+                ;
+            }
+            else //|abc
+            {
+                ;
+            }
+        }
+        if (i == count - 1 && strlen(list[i]) == 1 && strncmp(list[i], "&", 1) == 0) //&
+        {
+            kind |= BACKGROUND;
+            memset(list[i], 0, SIGNALMAX);
+        }
+        if (strncmp(list[i], "<", 1) == 0 && strlen(list[i]) != 1) //<
+        {
+            kind |= IN;
+            strcpy(infile, &list[i][1]);
+            memset(list[i], 0, SIGNALMAX);
+        }
+        if (strncmp(list[i], ">", 1) == 0 && strlen(list[i]) != 1) //>
+        {
+            kind |= OUT;
+            strcpy(outfile, &list[i][1]);
+            memset(list[i], 0, SIGNALMAX);
+        }
+    }
+
+    for (int i = 0; i < count; i++)
+    {
+        if (strlen(list[i]))
+        ll[i] = (char *)list[i];
+        else
+            ll[i] = NULL;
+    } //内置命令存在判断
+
+    if (findexe(list[0]) == 0) //未找到
     {
         if (strcmp(list[0], "cd") == 0) //cd
         {
@@ -193,57 +260,25 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX]) //执行命令
                     strcpy(path, lastpath);
                     have = 1;
                 }
-                /*
-                else
-                {
-                    改写
-                    for (int i = 0; i < strlen(ll[1]); i++) //~
-                    {
-                        if (list[1][i] == '~')
-                        {
-                            memset(path, 0, sizeof(path));
-                            strncpy(path, &list[1][0], i);
-                            // puts(path);
-                            strcat(path, getenv("HOME"));
-                            //puts(path);
-                            //strcat(path,"/");
-                            strcat(path, &list[1][i + 1]);
-                            // puts(path);
-                            strcat(path, "/");
-                            have = 1;
-                        }
-                    }
-                    
-                    char* tts=NULL;
-                    if((tts=strchr(list[1],'~'))!=NULL)
-                    {
-                        memset(path, 0, sizeof(path));
-                        strncpy(path, &list[1][0], (int)(tts - &list[1][0]));
-                        strcat(path, getenv("HOME"));
-
-                        strcat(path, tts+1);
-                        strcat(path, "/");
-                        have = 1;
-                        printf("%s\n", path);
-                    }
-                    }
-                */
                 if (have != 1) //指定普通目录
                 {
                     memset(path, 0, sizeof(path));
-                    strcpy(path, ll[1]);
+                    strcpy(path, list[1]);
                 }
             }
             if (strlen(path))
             {
-                char ll[PATH_MAX]={0};
-                strcpy(ll,lastpath);
+                char llt[PATH_MAX] = {0};
+                strcpy(llt, lastpath);
                 getcwd(lastpath, PATH_MAX);
                 // ll--lastpath(now)--path(next)
-
-                if(chdir(path)!=0)//异常参数处理
+                if (chdir(path) != 0) //执行&&异常参数处理
                 {
-                    strcpy(lastpath, ll);
+                    strcpy(lastpath, llt);
+                }
+                else
+                {
+                    return;
                 }
             }
             else
@@ -252,174 +287,50 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX]) //执行命令
                 exit(1);
             }
         }
-        else
+        else if (strcmp(list[0], "history") == 0) //history
         {
-            printf("can't find cmd");
-            return;
-        }
-    }
+            char lla[SIGNALMAX] = "";
+            strcat(lla, getenv("HOME"));
+            strcat(lla, "/.myshellhistory");
 
-    //判断后台运行符&
-    for (int i = 0; i < count - 1; i++)
-    {
-        if (strcmp(list[count - 1], "&") == 0)
-        {
-            perror("& error ");
-            exit(-1);
-        }
-    }
-    if (strcmp(list[count - 1], "&") == 0)
-    {
-        kind |= BACKGROUND;
-        count--;
-        memset(list[count], '\0', 1);
-    }
-
-    //重定向格式检测      &&pip  各一次
-    if (1)
-    {
-        if (strcmp(list[count - 1], "<") == 0)
-        {
-            perror("< 位置错误");
-            exit(-1);
-        }
-        if (strcmp(list[count - 1], ">") == 0)
-        {
-            perror("> 位置错误");
-            exit(-1);
-        }
-        if (strcmp(list[count - 1], "|") == 0)
-        {
-            perror("| 位置错误");
-            exit(-1);
-        }
-    }
-    for (int i = 0; i < count; i++)
-    {
-        if (list[i][0] == '|')
-        {
-            kind |= PIP;
-            if (pipc == -1)
-                pipc = i;
-            else
+            //无管道   只有count 1/2 不超过3
+            //有管道好多好多
+            if (kind & PIP)
             {
-                perror("|次数太多");
-                exit(-1);
+                ; //放弃
             }
-        }
-        if (list[i][0] == '>')
-        {
-            kind |= OUT;
-            if (outc == -1)
-                outc = i;
-            else
+            else if (count <= 2 && !(kind & PIP))
             {
-                perror(">重定向次数太多");
-                exit(-1);
+                ll[0] = "cat";
+                memset(list[0], 0, SIGNALMAX);
+                strcpy(list[0], "cat");
+                strcpy(list[1], lla);
+                ll[1] = (char *)lla;
+                //printf("count %d\n%sa\n%sa\n", count,ll[0],ll[1]);
             }
-        }
-        if (list[i][0] == '<')
-        {
-            kind |= IN;
-            if (inc == -1)
-                inc = i;
             else
             {
-                perror("<重定向次数太多");
-                exit(-1);
+                printf("can't find cmd");
+                return;
             }
         }
     }
-    //if (kind ^ 3 == 3){        perror("不支持同时重定向输入输出");exit(0);}
 
-    //重定向位置设置并清除原位置   &&pip
-    if (kind & IN && inc != -1)
-    {
-        if (list[inc][1] == '\0')
-        {
-            strcpy(infile, list[inc + 1]);
-            memset(list[inc], '\0', SIGNALMAX);
-            memset(list[inc + 1], '\0', SIGNALMAX);
-        }
-        else
-        {
-            strcpy(infile, list[inc]);
-            temp = strlen(infile);
-            memmove(infile, &infile[1], temp - 1);
-            infile[temp - 1] = '\0';
-            memset(list[inc], '\0', SIGNALMAX);
-        }
-    }
-    if (kind & OUT && outc != -1)
-    {
-        if (list[outc][1] == '\0')
-        {
-            strcpy(outfile, list[outc + 1]);
-            memset(list[outc], '\0', SIGNALMAX);
-            memset(list[outc + 1], '\0', SIGNALMAX);
-        }
-        else
-        {
-            strcpy(outfile, list[outc]);
-            temp = strlen(outfile);
-            memmove(outfile, &outfile[1], temp - 1);
-            outfile[temp - 1] = '\0';
-            memset(list[outc], '\0', SIGNALMAX);
-        }
-    }
-
-    if (kind & PIP && pipc != -1) //pip
-    {
-        if (list[pipc][1] == '\0')
-        {
-            strcpy(pipfile, list[pipc + 1]);
-            memset(list[pipc], '\0', SIGNALMAX);
-            memset(list[pipc + 1], '\0', SIGNALMAX);
-            pipc += 2;
-        }
-        else
-        {
-            strcpy(pipfile, list[pipc]);
-            temp = strlen(pipfile);
-            memmove(pipfile, &pipfile[1], temp - 1);
-            pipfile[temp - 1] = '\0';
-            memset(list[pipc], '\0', SIGNALMAX);
-            pipc += 1;
-        }
-
-        strcpy(next[0], pipfile);
-        int j = 1;
-        for (int i = pipc; i < count; i++)
-        {
-            if (strlen(list[i]))
-                strcpy(next[j++], list[i]);
-        }
-    }
-
-    //pip与重定向不能共存    目前无法实现
-    /*if ()
-    {
-        ;
-    }
-    else
-    {
-        exit(0);
-    }*/
-
+    int ifopeninfile = 0, ifopenoutfile = 0;
+    //printf("kind %d\n",kind);
+    //printf("%s\n%s\n%s\n", ll[0], ll[1], ll[2]);
     int pid = fork();
     if (pid < 0)
     {
         perror("fock failed");
         exit(-1);
     }
-
-    int fd;
-
-    switch (kind)
+    int fd, fdin, fdout;
+    if (pid == 0) //child
     {
-    case PIP:
-        if (pid == 0)
+        if (kind & PIP)
         {
+            exit(-2);
             int pid2;
             pid2 = fork();
             int fd2;
@@ -432,7 +343,7 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX]) //执行命令
             {
                 fd2 = open("/tmp/temp", O_WRONLY | O_CREAT | O_TRUNC, 0644);
                 dup2(fd2, 1);
-                execvp(list[0], ll);
+                execvp(ll[0], ll);
                 exit(0);
             }
 
@@ -450,55 +361,57 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX]) //执行命令
                 printf("remove error");
             exit(0);
         }
-        break;
-    case IN:
-        if (pid == 0)
+        if (kind & IN)
         {
-            fd = open(infile, O_RDONLY);
-            dup2(fd, 0);
-            execvp(list[0], ll);
-
-            exit(0);
+            fdin = open(infile, O_RDONLY);
+            if (fdin < 0)
+            {
+                perror("open failed");
+                exit(-1);
+            }
+            dup2(fdin, 0); //stdin
+            ifopeninfile = 1;
         }
-        break;
-    case OUT:
-        if (pid == 0)
+        if (kind & OUT)
         {
-            fd = open(outfile, O_RDWR | O_CREAT | O_TRUNC, 0644);
-            dup2(fd, 1);
-            execvp(list[0], ll);
-            exit(0);
+            fdout = open(outfile, O_RDWR | O_CREAT | O_TRUNC, 0644);
+            if (fdout < 0)
+            {
+                perror("open failed");
+                exit(-1);
+            }
+            dup2(fdout, 1); //stdout
+            ifopenoutfile = 1;
+        
         }
-        break;
-    case NO:
-        if (pid == 0)
-        {
-            //printf("\n");
-            execvp(list[0], ll);
+        
+            //printf("%s\n%s\n%s\n", ll[0], ll[1], ll[2]);
+            execvp(ll[0], ll); //处理ll????
+            if (ifopenoutfile)
+                close(fdout);
+            if (ifopeninfile)
+                close(fdin);
             exit(0);
-        }
-        break;
-    default:
-        break;
+        
     }
-
-    //wait
-    if (kind & BACKGROUND) //后台执行 父程序直接返回
+    else //father
     {
-        printf("child pid:%d\n", pid);
-        return;
-    }
-    else
-    {
-        if (waitpid(pid, NULL, 0) == -1)
+        //wait
+        if (kind & BACKGROUND) //后台执行 父程序直接返回
         {
-            perror("wait for child error");
-            exit(-1);
+            printf("child pid:%d\n", pid);
+            sleep(1);
+            return;
+        }
+        else
+        {
+            int status;
+            wait(&status);
         }
     }
 }
 
-void reexec(int argc, char **argv, char **environ)
+void reexec(int argc, char **argv)
 {
     //屏蔽ctrl+c
     signal(SIGINT, SIG_IGN);
@@ -525,20 +438,23 @@ void reexec(int argc, char **argv, char **environ)
         memset(list, 0, sizeof(char) * ARGCMAX * SIGNALMAX);
 
         prin4(pathbuf); //命令提示符
-        mygetcmd(buf);  //getch获取cmd
+        mygetcmd(buf);  //getch获取buf
+
+        //printf("%s\n", buf);
         char *tts = NULL;
-        
-        if ((tts = strchr(buf, '~')) != NULL)//替换~
-        {   char path[PATH_MAX]={0};
+
+        if ((tts = strchr(buf, '~')) != NULL) //替换~
+        {
+            char path[PATH_MAX] = {0};
             memset(path, 0, sizeof(PATH_MAX));
             strncpy(path, buf, (int)(tts - buf));
             strcat(path, getenv("HOME"));
             strcat(path, tts + 1);
             strcat(path, "/");
             memset(buf, 0, SIGNALMAX);
-            strcpy(buf,path);
+            strcpy(buf, path);
         }
-        
+
         int where = -1;
         int number = 1;
 
@@ -553,9 +469,9 @@ void reexec(int argc, char **argv, char **environ)
         }
 
         count = 0;
-        where = explancmd(buf, &count, list, &number); //解析cmd
+        where = explancmd(buf, &count, list, &number); //存储cmd
         docmd(count, list);
-        while (number != 1)//&& 
+        while (number != 1) //&&
         {
 
             //判断登出
@@ -570,7 +486,7 @@ void reexec(int argc, char **argv, char **environ)
 
             printf("\n");
             count = 0;
-            
+
             memset(list, 0, sizeof(char) * ARGCMAX * SIGNALMAX);
             where = explancmd(&buf[where + 2], &count, list, &number);
             where = -1;
@@ -584,12 +500,10 @@ void reexec(int argc, char **argv, char **environ)
         free(buf);
 }
 
-int main(int argc, char **argv, char **environ)
+int main(int argc, char **argv)
 {
-    reexec(argc, argv, environ);
+    reexec(argc, argv);
     return 0;
 }
-
-
 
 //main -->reexec-->explain&&docmd

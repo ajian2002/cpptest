@@ -14,10 +14,27 @@
 #include <time.h>
 #include <linux/limits.h>
 #include <unistd.h>
-#define DEBUG
+//#define DEBUG
 #define MYERROR
 //#undef DEBUG
-#include <my/debug.info.h>
+//#include <my/debug.info.h>
+#ifdef DEBUG
+#define DEBUGPRINT(format, ...) printf("[%s][%s][%d]" format "\n", __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__);
+
+#else
+#define DEBUGPRINT(format, ...)
+#endif
+
+#ifdef MYERROR
+#define PRINTEXIT(format, ...)                                                               \
+    {                                                                                        \
+        printf("[%s][%s][%d]" format "\n", __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__); \
+        exit(-1);                                                                            \
+    }
+#else
+#define PRINTEXIT(format, ...)
+#endif
+
 #include <readline/readline.h>
 #include <readline/history.h>
 

@@ -40,8 +40,7 @@
 
 // [v]实现 内建命令（cd ）
 // [v]屏蔽一些信号（如ctrl + c 不能终止）
-// [v]通过设置环境变量 可以直接使用 (在任意地方
-//     都可以运行你的shell)
+// [v]通过设置环境变量 可以直接使用 (在任意地方都可以运行你的shell)
 // [v]界面美观
 // [v]实现光标的移动
 // [v]实现内置命令history
@@ -64,7 +63,8 @@
 
 static char lastpath[PATH_MAX] = {0};
 #define ONLYSHOW(x) "\001" #x "\002"
-void prin4(char *pathbuf) //    $|#
+
+void prin4(char *pathbuf) //$|#
 {
     getcwd(pathbuf, PATH_MAX);
     printf("\e[0;34m"

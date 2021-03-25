@@ -60,7 +60,7 @@
 #define IN 4
 //&后台运行
 #define BACKGROUND 8
-
+#define APPENDOUT 16
 static char lastpath[PATH_MAX] = {0};
 #define ONLYSHOW(x) "\001" #x "\002"
 
@@ -80,11 +80,8 @@ void mygetcmd(char *buf) //获取输入&&tabline补全&&方向键&&历史记录
     //readline输入可用左右方向移动
     //以及自动补全
     char *b = readline(ONLYSHOW(\e[0;31m) "$ "ONLYSHOW(\e[0m)); //在非打印字符前后加上　\001 和　\002 解决换行显示错乱问题
-
-    add_history(b); //解决上下键查看历史
-
+    add_history(b);                                             //解决上下键查看历史
     strcat(b, "\n");
-
     long int len = strlen(b);
     //写入本地目录下.myshelllhistory文件
     char ho[PATH_MAX] = {0};
@@ -222,7 +219,8 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX], int kind) //执行命令
     //clear list
     char outfile[ARGCMAX][SIGNALMAX] = {{0}};
     char infile[ARGCMAX][SIGNALMAX] = {{0}};
-    int incount = 0, outcount = 0;
+    char appendoutfile[ARGCMAX][SIGNALMAX] = {{0}};
+    int incount = 0, outcount = 0, appendcount = 0;
 
     // for (int i = 0; i < count; i++)
     // {
@@ -240,21 +238,27 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX], int kind) //执行命令
             kind |= IN;
             while (strlen(infile[incount]))
                 incount++;
-
-            //处理管道
             strcpy(infile[incount++], &list[i][1]);
             memset(list[i], 0, SIGNALMAX);
         }
-        if (strncmp(list[i], ">", 1) == 0 && strlen(list[i]) != 1) //>
+        if (strncmp(list[i], ">", 1) == 0 && strlen(list[i]) != 1 && strncmp(list[i], ">>", 2) != 0) //>
         {
             kind |= OUT;
             while (strlen(outfile[outcount]))
                 outcount++;
 
-            //处理管道
-
             strcpy(outfile[outcount++], &list[i][1]);
             memset(list[i], 0, SIGNALMAX);
+        }
+        if (strlen(list[i]) >= 2 && strncmp(list[i], ">>", 2) == 0) //>
+        {
+
+            kind |= APPENDOUT;
+            while (strlen(appendoutfile[appendcount]))
+                appendcount++;
+            strcpy(appendoutfile[appendcount++], &list[i][2]);
+            memset(list[i], 0, SIGNALMAX);
+            //DEBUGPRINT("append list[%d]%s\n", appendcount - 1, appendoutfile[appendcount - 1]);
         }
 
         /* if (strncmp(list[i], "|", 1) == 0) //PIP
@@ -361,7 +365,7 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX], int kind) //执行命令
     }
     if (iffind == 0)
     {
-        perror("can't find cmd");
+        printf("can't find cmd");
         return;
     }
 
@@ -376,10 +380,6 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX], int kind) //执行命令
     {
         if (strlen(list[i]))
             ll[j++] = (char *)list[i];
-        else
-        {
-            continue;
-        }
     }
     // for (int i = 0; i < count; i++)
     // {
@@ -395,6 +395,7 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX], int kind) //执行命令
     int fd;
     int fdin[incount];
     int fdout[outcount];
+    int fdappend[appendcount];
     if (pid == 0) //child
     {
         /* if (kind & PIP)
@@ -461,6 +462,24 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX], int kind) //执行命令
                 dup2(fdout[i], 1); //stdout
             }
         }
+        if (kind & APPENDOUT)
+        {
+            //DEBUGPRINT("APPEND YES\n\n");
+            //DEBUGPRINT("appendcount:%d", appendcount);
+            for (int i = 0; i < appendcount; i++)
+            {
+                //DEBUGPRINT(" file:%s\n", appendoutfile[i]);
+                fdappend[i] = open(appendoutfile[i], O_RDWR | O_APPEND | O_CREAT, 0644);
+                if (fdappend[i] < 0)
+                    // {
+                    //     perror("open failed");
+                    //     exit(-1);
+                    // }
+                    PRINTEXIT("open failed");
+                dup2(fdappend[i], 1); //stdout
+                //DEBUGPRINT("dup2 append");
+            }
+        }
 
         //DEBUGPRINT("ll0:%s\nll1:%s\nll2:%s\nkind:%d\n", ll[0], ll[1], ll[2], kind);
         // int ms = 0;
@@ -468,21 +487,59 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX], int kind) //执行命令
         //     ms++;
 
         //处理数组
+        //DEBUGPRINT("bekind:%d\n", kind);
 
-        execvp(ll[0], ll);
-        //关文件
-        if (incount)
+        //in 子
+        int pid2 = fork();
+        if (pid2 < 0)
+            PRINTEXIT("fork failed");
+        if (pid2 == 0) //子子
         {
-            while (incount)
-                close(fdin[--incount]);
+            execvp(ll[0], ll);
+            _exit(EXIT_SUCCESS);
         }
-        if (outcount)
+        else //子父
         {
-            while (outcount)
-                close(fdout[--outcount]);
-        }
+            waitpid(pid2, NULL, 0);
+            printf("\n");
+            char pls[PATH_MAX] = {0};
 
-        exit(0);
+            if (kind & BACKGROUND)
+            {
+
+                prin4(pls);
+                // printf("\e[0;31m"
+                //     "$ "
+                //     "\e[0m");
+
+                //printf("\e[0;31m""$" "\e[0m"); //在非打印字符前后加上　\001 和　\002 解决换行显示错乱问题
+                //DEBUGPRINT("3");
+
+                puts("\e[0;31m"
+                     "$"
+                     "\e[0m");
+                // }
+            }
+            //返回值：如果执行成功则函数不会返回, 执行失败则直接返回-1, 失败原因存于errno 中.
+            //好家伙,不返回还行,后面白写了
+
+            // //关文件
+            // if (incount)
+            // {
+            //     while (incount)
+            //         close(fdin[--incount]);
+            // }
+            // if (outcount)
+            // {
+            //     while (outcount)
+            //         close(fdout[--outcount]);
+            // }
+
+            // if (kind & BACKGROUND)
+            //     DEBUGPRINT("\n");
+
+            _exit(EXIT_SUCCESS);
+        }
     }
     else //father
     {
@@ -490,14 +547,14 @@ void docmd(int count, char list[ARGCMAX][SIGNALMAX], int kind) //执行命令
         if (kind & BACKGROUND) //后台执行 父程序直接返回
         {
             printf("child pid:%d\n", pid);
-            sleep(3);
-            return;
+            sleep(1);
         }
         else
         {
             int status;
-            wait(&status);
+            waitpid(pid, &status, 0);
         }
+        return;
     }
 }
 

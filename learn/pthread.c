@@ -2,19 +2,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
-void thread(void)
+pthread_key_t key;
+int thread(void)
 {
-    printf("new thread id %d\n",pthread_self());
+    int d=3;
+    pthread_setspecific(key,(void*)d);
+    printf("new  thread id %lu\n", pthread_self());
+    
+    pthread_exit(-3);
 }
 int main()
 {
-    printf("1");
-    pthread_t thread;
-    printf("main thread id %d\n",pthread_self());
-    if(pthread_create(&thread,NULL,thread,NULL)!=0)
+    //printf("1");
+    pthread_t thid;
+    printf("main thread id %lu\n", pthread_self());
+    pthread_key_create(&key, NULL);
+    if (pthread_create(&thid, NULL, (void *)thread, NULL) != 0)
     {
-        perror("pthread_create failed!");exit(-1);
+        perror("pthread_create failed!");
+        exit(-1);
     }
+    int status;
+    pthread_join(thid, &status);
+    printf(" status is %d\n", status);
     sleep(1);
+
     exit(0);
 }

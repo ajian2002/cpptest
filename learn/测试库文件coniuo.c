@@ -4,7 +4,8 @@
 int main()
 { //实现读入一个字符，输出getch的返回值码
 	int ch;
-	while (1)
+	int j = 10;
+	while (j--)
 	{
 		while (ch = getch()) //把得到的值赋值给ch
 		{

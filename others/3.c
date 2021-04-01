@@ -26,7 +26,7 @@ int main()
     }
 
     int j = 0;
-    for (int i = 0; i < len; i++)
+    for (int i = 0; i < len&&j<count; i++)
     {
         d[j] = atoi(&s[i]); //存数
         i = f[j++];

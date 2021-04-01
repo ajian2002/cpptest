@@ -1,9 +1,11 @@
 
-x, y = map(int, input().split())
-z = ((x-y)/y*100)
-if(z < 10):
-    print("OK")
-elif(z >= 50):
-    print("Exceed %.0f%%. License Revoked" % (z))
-else:
-    print("Exceed %.0f%%. Ticket 200" % (z))
+song='弹歌'
+song_a='断竹'
+song_b='续竹'
+pin=input()
+pin_a=input()
+pin_b=input()
+print(pin+'\n'+song+'\n')
+print(pin_a+'\n'+song_a+'\n')
+print(pin_b+'\n'+song_b+'\n')
+

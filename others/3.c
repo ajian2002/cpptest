@@ -19,7 +19,9 @@ int main()
     while ((m=strchr(&s[c], '+')) != NULL || (m=strchr(&s[c], '-') )!= NULL ||(m= strchr(&s[c], '/')) != NULL || (m=strchr(&s[c], '*')) != NULL||(m=strchr(&s[c],'='))!=NULL)
     {
         
-        c=(int)(m-&s[c])+1;f[count++] = c; //存符号下标
+        c=(int)(m-&s[c]);
+        f[count++] = c; //存符号下标
+        c++;
         ;
     }
 

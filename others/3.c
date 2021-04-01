@@ -42,5 +42,5 @@ int main()
         if (s[f[i]] == '/')
             d[i + 1] /= d[i];
     }
-    printf("%d",d[count]);
+    printf("%d",d[count-1]);
 }

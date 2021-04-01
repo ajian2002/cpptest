@@ -19,8 +19,8 @@ int main()
     while ((m=strchr(&s[c], '+')) != NULL || (m=strchr(&s[c], '-') )!= NULL ||(m= strchr(&s[c], '/')) != NULL || (m=strchr(&s[c], '*')) != NULL||(m=strchr(&s[c],'='))!=NULL)
     {
         
-        c=(int)(m-&s[c]);
-        f[count++] = c; //存符号下标
+        c=(int)(m-&s[0]);
+       f[count++] = c; //存符号下标
         c++;
         ;
     }
@@ -41,6 +41,12 @@ int main()
             d[i + 1] *= d[i];
         if (s[f[i]] == '/')
             d[i + 1] /= d[i];
+    }  
+for (int i = 0; i < count; i++)
+    {printf("f%d :%d\n ",i,f[i]);
+    printf("d%d :%d\n ",i,d[i]);
+    
+    
     }
     printf("%d",d[count-1]);
 }

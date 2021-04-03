@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#define __USE_POSIX
+//#define __USE_POSIX
 #include <signal.h>
 #include <sys/time.h>
 

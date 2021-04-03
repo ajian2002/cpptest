@@ -14,7 +14,7 @@ int main()
 {
     int fd;
     char *p = NULL, *q = NULL;
-    fd = open("cin.in", O_RDWR|O_TRUNC);
+    fd = open("cin.in", O_RDWR | O_TRUNC);
     if (fd == -1)
         PRINTEXIT("open");
 
@@ -24,7 +24,7 @@ int main()
     int len = lseek(fd, 0, SEEK_END);
     //lseek(fd, 0, SEEK_SET);
 
-    p = (char *)mmap(NULL, len, PROT_READ | PROT_WRITE, MAP_SHARE , fd, 0);
+    p = (char *)mmap(NULL, len, PROT_READ | PROT_WRITE, MAP_SHARE, fd, 0);
     if (p == MAP_FAILED)
         PRINTEXIT("mmap failed");
 

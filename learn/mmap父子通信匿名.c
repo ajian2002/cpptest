@@ -35,33 +35,22 @@ int main() //读写文件
     }
     else if (pid > 0) //父写
     {
-        int fd = open("tsxt", O_RDWR | O_CREAT | O_TRUNC, 0644);
-        if (fd == -1)
-            PRINTEXIT("open error");
-        ftruncate(fd, 500);
-
         char *p = NULL;
 
-        p = mmap(NULL, FILELEN, PROT_WRITE, MAP_SHARED, fd, 0); //写映射
-        if (p == NULL)
+        p = mmap(NULL, FILELEN, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0); //读映射
+        if (p == 0)
             PRINTEXIT("mmap error");
-
-        close(fd);
-        //msync(p, FILELEN, MS_SYNC | MS_INVALIDATE);
-
         memset(p, 0, FILELEN);
-        msync(p, FILELEN, MS_SYNC | MS_INVALIDATE);
-        sleep(10);
         strcpy(p, "hello,i'm write process.my  pid is ");
-        msync(p, FILELEN, MS_SYNC | MS_INVALIDATE);
-        sleep(10);
+        msync(p, FILELEN, PROT_WRITE | PROT_READ);
+
         len = strlen(p);
         int j = 0;
         char ss[FILELEN] = {0};
         sprintf(&ss[strlen(ss)], "%d\n", getpid());
         strcat(p, ss);
 
-        //        printf("p0=%d\n", p[0]);
+        printf("p0=%d\n", p[0]);
 
         for (; j < 10; j++)
         {
@@ -82,21 +71,12 @@ int main() //读写文件
     }
     else if (pid == 0) // 子读
     {
-        signal(SIGINT, ummap);
-        int fd;
-    wwc:
-        fd = open("tsxt", O_RDONLY);
-        if (fd == -1)
-        {
-            sleep(1);
-            goto wwc;
-        }
         char *p = NULL;
 
-        p = mmap(NULL, FILELEN, PROT_READ, MAP_SHARED, fd, 0); //读映射
+        p = mmap(NULL, FILELEN, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0); //读映射
         if (p == 0)
             PRINTEXIT("mmap error");
-        close(fd);
+        signal(SIGINT, ummap);
         while (1)
         {
             if (strlen(p))

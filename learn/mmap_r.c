@@ -12,30 +12,37 @@
 #include <my/debug.info.h>
 
 #define FILELEN 4096
+void ummap(int signal)
+{
+    if (signal == SIGINT)
+    {
+        printf("cath SIGINT\n");
+        exit(0);
+    }
+}
 int main()
 {
-    //匿名映射不用手动操作文件
-
+    signal(SIGINT, ummap);
+    int fd;
+wwc:
+    fd = open("tsxt", O_RDONLY);
+    if (fd == -1)
+    {
+        sleep(1);
+        goto wwc;
+    }
     char *p = NULL;
-    int len = 0;
-    p = mmap(NULL, FILELEN, PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    if (p == NULL)
+
+    p = mmap(NULL, FILELEN, PROT_READ, MAP_SHARED, fd, 0); //读映射
+    if (p == 0)
         PRINTEXIT("mmap error");
-        
-    memset(p, 0, FILELEN);
-    strcpy(p, "hello,i'm write process.my  pid is ");
-    len = strlen(p);
-    int j = 0;
-    sprintf(&p[strlen(p)], "%d\n", getpid());
-    for (; j < 10; j++)
+    close(fd);
+    while (1)
     {
-        sleep(3);
-        sprintf(&p[strlen(p)], "%d\n", j);
+        if (strlen(p))
+        {
+            printf("%s\n", p);
+        }
+        sleep(1);
     }
-    len = munmap(p, FILELEN);
-    if (len == -1)
-    {
-        PRINTEXIT("munmap failed");
-    }
-    return 0;
 }

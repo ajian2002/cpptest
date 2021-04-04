@@ -12,4 +12,5 @@ items/big_items/everyday/
 venv
 venv/*
 
-
+!makefile
+!/**/makefile

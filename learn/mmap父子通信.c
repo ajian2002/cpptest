@@ -78,7 +78,7 @@ int main() //读写文件
             {
                 printf("%s\n", p);
             }
-            sleep(1);
+            
         }
     }
 }

@@ -1,5 +1,4 @@
-link:link.o
-	@gcc  link.o -o link
-	@rm -f *.o	
-link.o:链表的练习题.c sinlinklist.h
-	@gcc -c 链表的练习题.c -o link.o
+a.out:
+	gcc mmap父子通信.c -g -std=c99
+clean:
+	rm a.out

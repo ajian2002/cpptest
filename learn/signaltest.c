@@ -10,22 +10,37 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-//#define __USE_POSIX
 #include <signal.h>
 #include <sys/time.h>
 
 //alarm();
 //setitimer
-void er(void)
+void er(int number)
 {
-    printf("hello\n");
+    if (number == SIGINT)
+    {
+        printf("hello\n");
+        sleep(2);
+    }
+    return;
 }
 int main(int argc, char **argv)
 {
     sigset_t set;
     sigemptyset(&set);
     sigaddset(&set, SIGINT);
-    sigprocmask(SIG_BLOCK, &set, NULL);
+    // sigprocmask(SIG_BLOCK, &set, NULL);//屏蔽
+    // sigprocmask(SIG_UNBLOCK, &set, NULL)//解除屏蔽
+
+    // signal(SIGINT,er);//捕捉(尽量避免使用)
+
+    //int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
+
+    struct sigaction new, old;
+    new.sa_handler = er;         //执行函数名
+    sigemptyset(&new.sa_mask);   //设置屏蔽字
+    new.sa_flags = SA_RESTART ; //0 默认操作
+    sigaction(SIGINT, &new, &old);
     int j = 10;
     while (j--)
     {

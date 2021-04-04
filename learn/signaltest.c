@@ -1,5 +1,4 @@
-#define MYERROR
-#include <my/debug.info.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/mman.h>
@@ -10,7 +9,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-//#define __USE_POSIX
+#include <pthread.h>
 #include <signal.h>
 #include <sys/time.h>
 
@@ -23,13 +22,18 @@ void er(void)
 int main(int argc, char **argv)
 {
     sigset_t set;
+
     sigemptyset(&set);
     sigaddset(&set, SIGINT);
-    sigprocmask(SIG_BLOCK, &set, NULL);
+    
+    //signal(SIGINT,er);//捕捉
+    //sigprocmask(SIG_BLOCK, &set, NULL);//屏蔽
+    
     int j = 10;
     while (j--)
     {
-        printf("%d", j);
+        printf("%d\n", j);
         sleep(2);
     }
+    return 0;
 }

@@ -23,7 +23,7 @@ int munmap(void *addr, size_t length);
     return: -1 出错
 ```
 
-# 读写实例
+# 单进程读写实例
 
 ## 1.打开文件(大于等于只读权限,不能只写)
 
@@ -61,7 +61,7 @@ else
 printf("%s\n", p);
 ```
 
-### 写文件
+### 写文件(p指向文件，可对p0 p1 赋值)
 ```c
     //p指向文件头,原内容尾为\n\0 有换行键
     //cat的话非变成 原str+\n+新str
@@ -76,13 +76,23 @@ printf("%s\n", p);
         PRINTEXIT("munmap");
 ```
 
-# 匿名映射(不显示的打开文件)
+# 父子进程通信（匿名映射）
+
+**父子进程通信可以借助匿名映射完成，不需要自己指定文件**
+>注意事项：
+
+> 1.匿名通信仅能父子通信，无血缘关系进程不可
+
+> 2.无法区分父子进程对文件的权限，父子进程权限相同共享
+
+> 3.文件映射在fork之前
+
+
 宏 MAP_ANONYMOUS (或 MAP_ANON)
 
 `p = mmap(NULL, len, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0);`
 
 >(flags | 宏 然后 fd=-1)
-
 
 相当于
 
@@ -90,4 +100,13 @@ printf("%s\n", p);
 fd = open("/dev/zero", O_RDWR);
 p = mmap(NULL, size, PROT_READ|PROT_WRITE, MMAP_SHARED, fd, 0);
 ```
+`
+
+
+# 非血缘进程通信
+> 必须显式指明文件
+
+
+
+
 

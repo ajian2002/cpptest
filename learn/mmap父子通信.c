@@ -1,4 +1,4 @@
-#define __USE_MISC
+//#define __USE_MISC
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/mman.h>
@@ -25,6 +25,11 @@ void ummap(int signal)
 }
 int main() //读写文件
 {
+    char *p = NULL;
+
+    p = mmap(NULL, FILELEN, PROT_WRITE | PROT_READ, MAP_SHARED | MAP_ANONYMOUS, -1, 0); //读映射
+    if (p == 0)
+        PRINTEXIT("mmap error");
     //匿名映射不用手动操作文件
     int len = 0;
     pid_t pid = fork();
@@ -34,13 +39,6 @@ int main() //读写文件
     }
     else if (pid > 0) //父写
     {
-
-        char *p = NULL;
-
-        p = mmap(NULL, FILELEN, PROT_WRITE|PROT_READ, MAP_SHARED | MAP_ANON, -1, 0); //读映射
-        if (p == 0)
-            PRINTEXIT("mmap error");
-
         memset(p, 0, FILELEN);
         strcpy(p, "hello,i'm write process.my  pid is ");
         len = strlen(p);
@@ -48,12 +46,15 @@ int main() //读写文件
         char ss[FILELEN] = {0};
         sprintf(&ss[strlen(ss)], "%d\n", getpid());
         strcat(p, ss);
+
+        printf("p0=%d\n", p[0]);
         for (; j < 10; j++)
         {
             memset(ss, 0, FILELEN);
             //sprintf(&p[strlen(p)], "%d\n", j);
-            sprintf(ss, "%d\n", j);
+            sprintf(ss, "%d", j);
             strcat(p, ss);
+            sleep(1);
         }
         //printf("%s\n", p);
         wait(NULL);
@@ -66,19 +67,14 @@ int main() //读写文件
     }
     else if (pid == 0) // 子读
     {
-        char *p = NULL;
-
-        p = mmap(NULL, FILELEN, PROT_READ, MAP_SHARED | MAP_ANON, -1, 0); //读映射
-        if (p == 0)
-            PRINTEXIT("mmap error");
-
+        signal(SIGINT, ummap);
         while (1)
         {
             if (strlen(p))
             {
                 printf("%s\n", p);
             }
-            
+            sleep(1);
         }
     }
 }

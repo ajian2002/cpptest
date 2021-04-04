@@ -50,12 +50,14 @@ int main() //读写文件
         //msync(p, FILELEN, MS_SYNC | MS_INVALIDATE);
 
         memset(p, 0, FILELEN);
-        msync(p, FILELEN, MS_SYNC | MS_INVALIDATE);
+        
+        //msync(p, FILELEN, MS_SYNC | MS_INVALIDATE);
         sleep(10);
         strcpy(p, "hello,i'm write process.my  pid is ");
-        msync(p, FILELEN, MS_SYNC | MS_INVALIDATE);
+        //msync(p, FILELEN, MS_SYNC | MS_INVALIDATE);
         sleep(10);
         len = strlen(p);
+        
         int j = 0;
         char ss[FILELEN] = {0};
         sprintf(&ss[strlen(ss)], "%d\n", getpid());

@@ -5,10 +5,12 @@
 pthread_key_t key;
 int thread(void)
 {
-    int d=3;
-    pthread_setspecific(key,(void*)d);
+    int d = 3;
+
+    pthread_setspecific(key, (void *)d); //一键多值
+
     printf("new  thread id %lu\n", pthread_self());
-    
+
     pthread_exit(-3);
 }
 int main()

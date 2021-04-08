@@ -2,6 +2,7 @@
 #include <stdlib.h>
 static int NUMBER = 2;
 //声明直接搬运,各函数自己实现
+
 struct Node
 {
     int data;
@@ -10,18 +11,22 @@ struct Node
 
 // 创建列表
 int initList(struct Node **linkList);
+
 // 头插法
 int headInsert(struct Node **linkList);
+
 // 尾插法
 int tailInsert(struct Node **linkList);
 // 获取结点
 void getNode(struct Node **linkList, int NUMBER);
 // 获取结点数据
 int getData(struct Node **linkList, int NUMBER);
+
 // 设置结点数据
 int setData(struct Node **linkList, int index, int data);
 // 插入结点
 int insert(struct Node **linkList, int index, int data);
+
 // 删除结点
 void removeNode(struct Node **linkList, int index);
 // 获取链表长度
@@ -44,27 +49,27 @@ int main()
     // int size = 10;
     // int nums[size] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
     printf("有头节点\n");
-    
+
     printf("创建\n");
     initList(linkList);
     seelink(*linkList);
-    
+
     printf("头插\n");
     headInsert(linkList);
     seelink(*linkList);
-    
+
     printf("尾插\n");
     tailInsert(linkList);
     seelink(*linkList);
-    
+
     //获取节点
     getNode(linkList, NUMBER);
     seelink(*linkList);
-    
+
     //获取节点数据
     printf("%d\n", error = getData(linkList, NUMBER + 1));
     seelink(*linkList);
-    
+
     //设置节点数据
     printf("设置节点%d数据为%d  ", NUMBER + 1, error = setData(linkList, 3, 4));
     printf("设置节点%d数据为%d  ", NUMBER - 1, error = setData(linkList, 1, 1));

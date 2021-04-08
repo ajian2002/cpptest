@@ -2,7 +2,10 @@
 //带头节点的单链表如上操作                         yes
 //递归和非递归反转单链表
 //获取长度为k单链表的中点（向下取整）的指针
-
+struct Date
+{
+    int data;
+};
 #include "sinlinklist.h"
 
 void *getmidlink(linklist *link, int k); // 获取长度为k单链表的中点（向下取整）的指针

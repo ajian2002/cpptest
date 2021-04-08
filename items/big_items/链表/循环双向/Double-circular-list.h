@@ -29,9 +29,6 @@ struct list
 // 创建列表
 List initList(List *list, Iterator node);
 
-//删除链表
-List removeList(List *list);
-
 //创建节点
 Iterator initNode(void *data, int count);
 
@@ -40,6 +37,9 @@ List headInsert(List list, Iterator node);
 
 // 尾插法
 List tailInsertNode(List list, Iterator node);
+
+//删除链表
+List removeList(List *list);
 
 // 删除第index个节点
 List removeindexNode(List list, int index);

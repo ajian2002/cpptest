@@ -1,5 +1,4 @@
-# 消息队列
-
+# System V消息队列
 
 ## 写
 
@@ -19,7 +18,7 @@ struct msgst //任意起名
 } mymsg;  //创建对象,,也可以后面自己随时创建对象
 ```
 
-### ftok得到键值
+###  ftok得到键值
 
 ```c
 //key_t ftok(const char *__pathname, int __proj_id)
@@ -72,7 +71,7 @@ int msgsnd(int __msqid, const void *__msgp, size_t __msgsz, int __msgflg)
 
 ### 得到键值和消息队列号
 
-[ftok得到键值](#  ftok得到键值)
+[ftok得到键值](# ftok得到键值)
 
 [创建/访问消息队列](# 创建/访问消息队列)
 

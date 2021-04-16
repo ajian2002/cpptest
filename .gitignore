@@ -20,4 +20,4 @@ venv/*
 /**/a.out
 
 !配置/
-!/**/.vscode/*
+!/**/vscode/*

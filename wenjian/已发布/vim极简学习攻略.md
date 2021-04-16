@@ -1,14 +1,3 @@
-# 目录(点击跳转)
-
-- [目录(点击跳转)](#目录点击跳转)
-- [前言](#前言)
-- [学习](#学习)
-  - [打开](#打开)
-  - [模式介绍](#模式介绍)
-  - [1.键位(常用)](#1键位常用)
-  - [2.配置文件.vimrc](#2配置文件vimrc)
-  - [3.插件推荐(待补充)](#3插件推荐待补充)
-- [尾言](#尾言)
 
 # 前言
 
@@ -121,9 +110,69 @@ colorscheme elflord
 
 ```
 
-## 3.插件推荐(待补充)
+## 3.插件配置与语法补全
 
-    ~~~~~~~~~~~~~~~~~~~~~~~~~
+### [vim-plug](https://github.com/junegunn/vim-plug)
+
+```
+优点
+1. 易于设置：单个文件。无需样板代码。
+2. 易于使用：简洁直观的语法
+3. 超高速并行安装/更新（与任何的+job，+python，+python3，+ruby，或Neovim）
+4. 创建浅克隆，以最大程度地减少磁盘空间使用和下载时间
+5. 按需加载可加快启动时间
+6. 可以查看和回滚更新
+7. 分支/标签/提交支持
+8. 更新后挂钩
+9. 支持外部管理的插件
+```
+
+### 安装 vim-plug
+
+```
+mkdir ~/.vim/autoload/
+cd ~/.vim/autoload/
+wget https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+```
+
+或者直接
+
+```
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+```
+
+日常使用时,在`~/.vimrc`文件增加一段
+
+```
+call plug#begin('~/.vim/plugged')
+--------------
+"插件名称
+
+
+--------------
+plug#end()
+```
+
+### 语法补全
+
+**_特别(c/c++)_**
+在命令行安装 ccls
+例如 ubuntu : `sudo apt-get install ccls`
+
+1. 添加插件在配置文件 `~/.vimrc` 的`call plug#begin` 与 `plug#end() `中间
+
+```
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+```
+
+2. 命令行直接 vim 进入界面 ,输入`:PlugInstall` 等待安装完成
+
+3. 打开[Language servers](https://github.com/neoclide/coc.nvim/wiki/Language-servers#ccobjective-c)找到自己需要的语法补全配置(c/c++ 直接复制 ccls 的配置文件),复制到剪贴板
+
+4. 输入`:CocConfig` ,按 i 进入编辑模式 ,粘贴刚才复制得到的配置,多种语言配置文件以逗号隔开,最外层补上一对大括号,保存退出
+
+5. 测试补全效果,一般不会报错,报错自己寻找解决办法
 
 # 尾言
 

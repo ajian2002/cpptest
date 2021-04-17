@@ -4,6 +4,6 @@
 
 int main()
 {
-    inet_ntop(AF_INET,)
+    inet_ntop(AF_INET,);
 
 }

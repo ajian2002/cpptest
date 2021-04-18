@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/ipc.h>
+#include <sys/mman.h>
 #include <unistd.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -10,17 +10,6 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/time.h>
-#include <sys/param.h>
-#include <syslog.h>
-//System V
-#include <sys/msg.h> //消息队列
-#include <sys/sem.h> //信号量
-#include <sys/shm.h> //共享内存区
-//Posix
-#include <mqueue.h>	   //消息队列
-#include <semaphore.h> //信号量
-#include <sys/mman.h>  //共享内存区
-
 
 #ifdef DEBUG
 #define DEBUGPRINT(format, ...) printf("[%s][%s][%d]" format "\n", __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__);

@@ -1,4 +1,5 @@
 #include <my/debug.info.h>
+
 char *KMP(char *s1, char *s2)
 {
     int M = strlen(s1);

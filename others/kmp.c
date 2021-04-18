@@ -1,14 +1,13 @@
 #include <my/debug.info.h>
 char *KMP(char *s1, char *s2)
 {
-    //strstr(s1,s2);
     int M = strlen(s1);
     int N = strlen(s2);
     int i = 0, j = 0;
-    //temp[N][256]
     int **temp = (int **)malloc(sizeof(int *) * (N));
     for (i = 0; i < N; i++)
     {
+		
         temp[i] = (int *)malloc(256 * sizeof(int));
         memset(temp[i], 0, 256 * sizeof(int));
     }
@@ -20,15 +19,10 @@ char *KMP(char *s1, char *s2)
     {
         for (c = 0; c < 256; c++)
         {
-            // if (s2[j] == c)
-            //     temp[j][c] = j + 1;
-            // else
-            //     temp[j][c] = temp[x][c];
             temp[j][c] = temp[x][c];
             temp[j][(int)s2[j]] = j + 1;
         }
         x = temp[x][(int)s2[j]];
-        //printf("c:%d\n", c);
     }
 
     //search
@@ -38,7 +32,6 @@ char *KMP(char *s1, char *s2)
         j = temp[j][(int)s1[i]];
         if (j == N)
         {
-            //printf("%d  %s\n", i - N + 1, &s1[i - N + 1]);
             return &s1[i - N + 1];
         }
     }

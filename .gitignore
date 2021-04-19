@@ -18,7 +18,7 @@ venv/*
 /**/client
 /**/server
 /**/a.out
-
-!配置/*
+package.json
+!myconfigs/*
 !/**/vscode/*
 !/**/ssh/*

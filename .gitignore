@@ -19,6 +19,8 @@ venv/*
 /**/server
 /**/a.out
 package.json
+package-lock.json
+node_modules
 !myconfigs/*
 !/**/vscode/*
 !/**/ssh/*

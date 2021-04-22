@@ -15,7 +15,7 @@ void *service(void *sock)
     addr.sin_port = htons(13);
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    bind(sockfd, (struct sockaddr *)&addr, sizeof(addr));
+    bind(sockfd, (struct sockaddr *)&addr, NULL);
 
     //    listen(sockfd,LISTENQ);
     listen(sockfd, 5);

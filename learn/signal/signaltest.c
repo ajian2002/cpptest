@@ -26,7 +26,6 @@ void er(int number)
 int main(int argc, char **argv)
 {
     sigset_t set;
-
     sigemptyset(&set);
     sigaddset(&set, SIGINT);
     // sigprocmask(SIG_BLOCK, &set, NULL);//屏蔽

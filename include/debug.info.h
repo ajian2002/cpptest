@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <time.h>
+#include <pthread.h>
 #ifdef DEBUG
 #define DEBUGPRINT(format, ...)                                        \
   printf("[%s][%s][%d]" format "\n", __FILE__, __FUNCTION__, __LINE__, \

@@ -1,5 +1,4 @@
 #define MYERROR
-#define __USE_POSIX
 #include <my/debug.info.h>
 //多进程
 #define MAXLINE 256
@@ -36,54 +35,18 @@ void *service(void *CAP)
         write(sockfd, buf, sizeof(buf));
         memset(buf, 0, sizeof(char) * MAXLINE);
     }
-    printf("one pthread sleep and exit\n");
-  
-    close(sockfd);  sleep(3);
-    pthread_exit(0);
     return NULL;
 }
-/*void *client(void *sock)
-{
-    char s1[20];
-wwc:
-    memset(s1, 0, sizeof(char) * 20);
-    int sockfd = *(int *)sock;
-    char buf[MAXLINE];
-    memset(buf, 0, sizeof(char) * MAXLINE);
-
-    struct sockaddr_in addr;
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(13);
-    printf("input ip:");
-    scanf("%s", s1);
-    if (inet_pton(AF_INET, s1, &addr.sin_addr) <= 0)
-        PRINTEXIT("inet");
-    if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-        PRINTEXIT("connect error");
-    int n = 0;
-    while ((n = read(sockfd, buf, MAXLINE)) > 0)
-    {
-        buf[n] = 0;
-        printf("%s\n", buf);
-        if (fputs(buf, stdout) == EOF)
-            PRINTEXIT("fputs");
-    }
-    if (n < 0)
-        PRINTEXIT("read");
-    close(sockfd);
-    sleep(3);
-    goto wwc;
-    return NULL;
-}*/
-void CatChildPthread(int sig)
+void CatChildExec(int sig)
 {
     if (sig == SIGCHLD)
     {
-        //wait(NULL);
-        printf("detached ");
-        sleep(5);
-        return;
+        while (wait(NULL))
+        {
+            printf("catched child\n ");
+            sleep(5);
+            return;
+        }
     }
 }
 int main(int argc, char **argv)
@@ -103,6 +66,7 @@ int main(int argc, char **argv)
     socklen_t slen = sizeof(struct sockaddr);
     struct ClientAddrPort cs[MAXCLIENT];
     int i = 0;
+    int pid[MAXCLIENT];
     // sigset_t sig;
     // sigemptyset(&sig);
     // sigaddset(&sig, SIGCHLD);
@@ -111,20 +75,34 @@ int main(int argc, char **argv)
     // new.sa_flags = SA_SIGINFO;
     // sigemptyset(&new.sa_mask); //设置屏蔽字S
     // sigaction(SIGCHLD, &new, NULL);
-    //signal(SIGCHLD, CatChildPthread);
+    signal(SIGCHLD, CatChildExec);
     while (1)
     {
         memset(&cs[i], 0, sizeof(struct ClientAddrPort));
         cfd = accept(sockfd, (struct sockaddr *)&addr, &slen); //accept
         cs[i].addr = addr;
         cs[i].sock = cfd;
-        pthread_create(&thread[i], NULL, service, (void *)&cs[i]);
-        pthread_detach(thread[i]);
         i++;
         if (i > MAXCLIENT)
         {
             printf("max client\n");
-            break;
+            exit(-1);
+        }
+        pid[i] = fork();
+        if (pid[i] == 0)
+        {
+            close(sockfd);
+            service((void *)&cs[i]);
+            exit(0);
+        }
+        else if (pid < 0)
+        {
+            PRINTEXIT("fork error");
+        }
+        else
+        {
+            close(cfd);
+            continue;
         }
     }
     return 0;

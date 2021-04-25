@@ -36,9 +36,7 @@ void *service(void *CAP)
         write(sockfd, buf, sizeof(buf));
         memset(buf, 0, sizeof(char) * MAXLINE);
     }
-    printf("one pthread sleep and exit\n");
-  
-    close(sockfd);  sleep(3);
+
     pthread_exit(0);
     return NULL;
 }

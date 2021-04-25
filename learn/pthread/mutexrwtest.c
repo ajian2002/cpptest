@@ -39,8 +39,8 @@ int main()
     int money = 300;
     pthread_mutex_init(&lock, NULL); //创建锁
     pthread_attr_getdetachstate();
-    pthread_cancel()
-        pthread_create(&pth, NULL, (void *)twothread, (void *)&money);
+    // pthread_cancel()
+    pthread_create(&pth, NULL, (void *)twothread, (void *)&money);
 
     while (j++ < 5)
     {

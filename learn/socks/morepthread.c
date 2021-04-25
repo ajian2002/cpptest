@@ -22,15 +22,24 @@ void *service(void *CAP)
     {
 
         read(sockfd, buf, MAXLINE);
+
         printf("read:%s", buf);
         printf("from %s %d\n", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
+
+        if (strncmp(buf, "exit", 4) == 0)
+        {
+            break;
+        }
         memset(buf, 0, sizeof(char) * MAXLINE);
         tick = time(NULL);
         snprintf(buf, MAXLINE, "%.24s\r\n", ctime(&tick));
         write(sockfd, buf, sizeof(buf));
         memset(buf, 0, sizeof(char) * MAXLINE);
     }
-    close(sockfd);
+    printf("one pthread sleep and exit\n");
+  
+    close(sockfd);  sleep(3);
+    pthread_exit(0);
     return NULL;
 }
 /*void *client(void *sock)
@@ -67,12 +76,21 @@ wwc:
     goto wwc;
     return NULL;
 }*/
-void *CatChildPthread(void *a);
+void CatChildPthread(int sig)
+{
+    if (sig == SIGCHLD)
+    {
+        //wait(NULL);
+        printf("detached ");
+        sleep(5);
+        return;
+    }
+}
 int main(int argc, char **argv)
 {
 
     int sockfd, cfd;
-    pthread_t thread;
+    pthread_t thread[MAXCLIENT];
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) //创建套接字
         PRINTEXIT("socket error");
     struct sockaddr_in addr;
@@ -90,15 +108,18 @@ int main(int argc, char **argv)
     // sigaddset(&sig, SIGCHLD);
     // struct sigaction new;
     // new.sa_handler = CatChildPthread; //执行函数名
-    // sigemptyset(&new.sa_mask);        //设置屏蔽字S
+    // new.sa_flags = SA_SIGINFO;
+    // sigemptyset(&new.sa_mask); //设置屏蔽字S
     // sigaction(SIGCHLD, &new, NULL);
+    //signal(SIGCHLD, CatChildPthread);
     while (1)
     {
         memset(&cs[i], 0, sizeof(struct ClientAddrPort));
         cfd = accept(sockfd, (struct sockaddr *)&addr, &slen); //accept
         cs[i].addr = addr;
         cs[i].sock = cfd;
-        pthread_create(&thread, NULL, service, (void *)&cs[i]);
+        pthread_create(&thread[i], NULL, service, (void *)&cs[i]);
+        pthread_detach(thread[i]);
         i++;
         if (i > MAXCLIENT)
         {

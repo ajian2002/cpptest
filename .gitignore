@@ -23,6 +23,6 @@ package-lock.json
 node_modules
 yarn.lock
 !myconfigs/*
-
+/**/nohub.out
 !/**/vscode/*
 !/**/ssh/*

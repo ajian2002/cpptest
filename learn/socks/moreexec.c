@@ -9,6 +9,14 @@ struct ClientAddrPort
     struct sockaddr_in addr;
     int sock;
 };
+void CatChildExec(int sig)
+{
+    if (sig == SIGCHLD)
+    {
+        while (waitpid(0, NULL, WNOHANG))
+            ;
+    }
+}
 void *service(void *CAP)
 {
     struct ClientAddrPort cs = *(struct ClientAddrPort *)CAP;
@@ -19,36 +27,32 @@ void *service(void *CAP)
     time_t tick;
     while (1)
     {
+        int len = 0;
+        len = read(sockfd, buf, MAXLINE);
 
-        read(sockfd, buf, MAXLINE);
+        if (len == 0)
+        {
+            break;
+        }
+        printf("len:%d\n", len);
 
         printf("read:%s", buf);
         printf("from %s %d\n", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
 
         if (strncmp(buf, "exit", 4) == 0)
-        {
             break;
-        }
+
         memset(buf, 0, sizeof(char) * MAXLINE);
         tick = time(NULL);
         snprintf(buf, MAXLINE, "%.24s\r\n", ctime(&tick));
         write(sockfd, buf, sizeof(buf));
         memset(buf, 0, sizeof(char) * MAXLINE);
     }
+
+    close(sockfd);
     return NULL;
 }
-void CatChildExec(int sig)
-{
-    if (sig == SIGCHLD)
-    {
-        while (wait(NULL))
-        {
-            printf("catched child\n ");
-            sleep(5);
-            return;
-        }
-    }
-}
+
 int main(int argc, char **argv)
 {
 
@@ -61,6 +65,10 @@ int main(int argc, char **argv)
     addr.sin_family = AF_INET;
     addr.sin_port = htons(PORT);
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    //开启端口复用
+    int op = 1;
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, (void *)&op, sizeof(op));
+
     bind(sockfd, (struct sockaddr *)&addr, sizeof(addr)); //绑定
     listen(sockfd, 4);                                    //监听
     socklen_t slen = sizeof(struct sockaddr);
@@ -82,7 +90,7 @@ int main(int argc, char **argv)
         cfd = accept(sockfd, (struct sockaddr *)&addr, &slen); //accept
         cs[i].addr = addr;
         cs[i].sock = cfd;
-        i++;
+
         if (i > MAXCLIENT)
         {
             printf("max client\n");
@@ -102,6 +110,7 @@ int main(int argc, char **argv)
         else
         {
             close(cfd);
+            i++;
             continue;
         }
     }

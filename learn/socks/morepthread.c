@@ -20,12 +20,14 @@ void *service(void *CAP)
     time_t tick;
     while (1)
     {
-
-        read(sockfd, buf, MAXLINE);
-
+        int len = read(sockfd, buf, MAXLINE);
+        if (len == 0)
+        {
+            //client closed
+            break;
+        }
         printf("read:%s", buf);
         printf("from %s %d\n", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
-
         if (strncmp(buf, "exit", 4) == 0)
         {
             break;
@@ -36,54 +38,54 @@ void *service(void *CAP)
         write(sockfd, buf, sizeof(buf));
         memset(buf, 0, sizeof(char) * MAXLINE);
     }
-
+    close(sockfd);
     pthread_exit(0);
     return NULL;
 }
-/*void *client(void *sock)
-{
-    char s1[20];
-wwc:
-    memset(s1, 0, sizeof(char) * 20);
-    int sockfd = *(int *)sock;
-    char buf[MAXLINE];
-    memset(buf, 0, sizeof(char) * MAXLINE);
+// /*void *client(void *sock)
+// {
+//     char s1[20];
+// wwc:
+//     memset(s1, 0, sizeof(char) * 20);
+//     int sockfd = *(int *)sock;
+//     char buf[MAXLINE];
+//     memset(buf, 0, sizeof(char) * MAXLINE);
 
-    struct sockaddr_in addr;
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(13);
-    printf("input ip:");
-    scanf("%s", s1);
-    if (inet_pton(AF_INET, s1, &addr.sin_addr) <= 0)
-        PRINTEXIT("inet");
-    if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
-        PRINTEXIT("connect error");
-    int n = 0;
-    while ((n = read(sockfd, buf, MAXLINE)) > 0)
-    {
-        buf[n] = 0;
-        printf("%s\n", buf);
-        if (fputs(buf, stdout) == EOF)
-            PRINTEXIT("fputs");
-    }
-    if (n < 0)
-        PRINTEXIT("read");
-    close(sockfd);
-    sleep(3);
-    goto wwc;
-    return NULL;
-}*/
-void CatChildPthread(int sig)
-{
-    if (sig == SIGCHLD)
-    {
-        //wait(NULL);
-        printf("detached ");
-        sleep(5);
-        return;
-    }
-}
+//     struct sockaddr_in addr;
+//     memset(&addr, 0, sizeof(addr));
+//     addr.sin_family = AF_INET;
+//     addr.sin_port = htons(13);
+//     printf("input ip:");
+//     scanf("%s", s1);
+//     if (inet_pton(AF_INET, s1, &addr.sin_addr) <= 0)
+//         PRINTEXIT("inet");
+//     if (connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+//         PRINTEXIT("connect error");
+//     int n = 0;
+//     while ((n = read(sockfd, buf, MAXLINE)) > 0)
+//     {
+//         buf[n] = 0;
+//         printf("%s\n", buf);
+//         if (fputs(buf, stdout) == EOF)
+//             PRINTEXIT("fputs");
+//     }
+//     if (n < 0)
+//         PRINTEXIT("read");
+//     close(sockfd);
+//     sleep(3);
+//     goto wwc;
+//     return NULL;
+// }*/
+// void CatChildPthread(int sig)
+// {
+//     if (sig == SIGCHLD)
+//     {
+//         //wait(NULL);
+//         printf("detached ");
+//         sleep(5);
+//         return;
+//     }
+// }
 int main(int argc, char **argv)
 {
 
@@ -96,6 +98,11 @@ int main(int argc, char **argv)
     addr.sin_family = AF_INET;
     addr.sin_port = htons(PORT);
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    //开启端口复用
+    int op = 1;
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, (void *)&op, sizeof(op));
+
     bind(sockfd, (struct sockaddr *)&addr, sizeof(addr)); //绑定
     listen(sockfd, 4);                                    //监听
     socklen_t slen = sizeof(struct sockaddr);

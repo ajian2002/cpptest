@@ -29,9 +29,8 @@
 less 00111110_00110001_00110000_00110000_00110000_00110000|grep "0101010"|wc -l
 ```
 
-awesome
-第一关通关awesome
-第一关通关3.
+
+3.
 
 ![imagea4f420d1c4f86e54.png](https://tu.yegetables.com/images/2021/04/29/imagea4f420d1c4f86e54.png)
 熟悉 linux 的同学这下就看懂了，则是一条命令，我们打开终端在这个二进制文件的所在目录执行，得到了

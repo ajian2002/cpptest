@@ -1,33 +1,38 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+int compare(char *a, char *b)
+{
+    return (*a > *b);
+}
 int main()
 {
-    int n;
+    int n, m;
     int count = 0;
-    scanf("%d", &n);
-    int s = 0;
-    for (int i = 0; i < 1001; i++)
+    char buf[10000];
+    memset(buf, 0, sizeof(char) * 10000);
+    // scanf("%s", buf);
+    // getline(buf, 10000, stdin);
+    fgets(buf, 10000, stdin);
+    buf[strlen(buf) - 1] = 0;
+    qsort(buf, strlen(buf), sizeof(char), compare);
+    int len = strlen(buf);
+    char *temp = &buf[0];
+    printf("begin:%s\n", buf);
+    for (int i = 1; i < strlen(buf); i++)
     {
-        int temp = i;
-        int sum = 0;
-        while (temp)
+        if (strncmp(&buf[i], temp, 1) == 0)
         {
-            int cc = temp % 10;
-            temp /= 10;
-            sum += cc;
+            int s = strlen(buf);
+            memmove(temp, &buf[i], strlen(buf) - i);
+            buf[s - 1] = 0;
+            i--;
+            printf("%s\n", buf);
         }
-        if (sum == n)
+        else
         {
-            printf("%8d", i);
-            s++;
-            if (s == 6)
-            {
-                s = 0;
-                printf("\n");
-            }
+            temp = &buf[i];
         }
     }
-    if (s != 0)
-    {
-        printf("\n");
-    }
+    printf("final:%s", buf);
 }

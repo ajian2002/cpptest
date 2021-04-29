@@ -1,26 +1,32 @@
-#include<stdio.h>
-#include<sys/types.h>
-#include<unistd.h>
-#include<stdlib.h>
-#include<errno.h>
-#include<fcntl.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
 
 int main()
 {
-	int fd;
-	printf("uid %d euid %d\n",getuid(),geteuid());
-	fd=open("abc.in",O_RDWR);
-	if(fd==-1)
+	int n, find;
+	scanf("%d", &n);
+	int a[n];
+	int dount = -1;
+	for (int i = 0; i < n; i++)
 	{
-		printf("open failure  %s\n",strerror(errno));
-		exit(1);
+		scanf("%d", &a[i]);
 	}
-	else
+	scanf("%d", &find);
+	int iss = 0;
+	for (int i = 0; i < n; i++)
 	{
-		printf("open success\n");
+		if (a[i] < find && iss == 0)
+		{
+
+			printf("%3d", find);
+			iss = 1;
+		}
+		printf("%3d", a[i]);
 	}
-	close(fd);
-	exit(0);
+	if (a[n - 1] > find)
+	{
+		printf("%3d", find);
+	}
 }
-
-

@@ -64,7 +64,9 @@ int main(int argc, char **argv)
     memset(&addr, 0, sizeof(addr)); //自定义addr结构
     addr.sin_family = AF_INET;
     addr.sin_port = htons(PORT);
+    
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    
     //开启端口复用
     int op = 1;
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT, (void *)&op, sizeof(op));

@@ -1,16 +1,16 @@
-#include <stdlib.h>
-#include <stdio.h>
+#define MYERROR
+#include <my/debug.info.h>
 void aswap(void *a, void *b, int size)
 {
     char temp;
-    char *t,*p;
-    t=(char*)a;p=(char*)b;
-    for (int i = 0; i < size; i++, t++,p++)
+    char *t, *p;
+    t = (char *)a;
+    p = (char *)b;
+    for (int i = 0; i < size; i++, t++, p++)
     {
         temp = *t;
-        *t= *p;
+        *t = *p;
         *p = temp;
-        
     }
 }
 int main()
@@ -24,5 +24,6 @@ int main()
     printf("%d %d\n", a, b);
     aswap(&c, &d, sizeof(double));
     printf("%f %f", c, d);
+    PRINTEXIT("error");
     return 0;
 }

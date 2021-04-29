@@ -16,7 +16,8 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <pthread.h>
-#ifdef DEBUG
+
+#ifdef DEBUGPRINT
 #define DEBUGPRINT(format, ...)                                        \
   printf("[%s][%s][%d]" format "\n", __FILE__, __FUNCTION__, __LINE__, \
          ##__VA_ARGS__);
@@ -25,7 +26,8 @@
 #define DEBUGPRINT(format, ...)
 #endif
 
-#ifdef MYERROR
+
+#if defined MYERROR || defined PRINTEXIT
 #define PRINTEXIT(format, ...)                                                 \
   {                                                                            \
     fprintf(stderr,                                                            \
@@ -37,6 +39,7 @@
 #else
 #define PRINTEXIT(format, ...)
 #endif
+
 #ifdef WRITE_LOG
 #define WRITE_LOG(filename, FORMAT, ...)                                  \
   {                                                                       \

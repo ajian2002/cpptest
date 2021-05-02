@@ -1,18 +1,3 @@
-//#define __USE_MISC
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/mman.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <string.h>
-#include <wait.h>
-#include <errno.h>
-#include <pthread.h>
-//#include <pthread_mytex_t.h>
 #define MYERROR
 #include <my/debug.info.h>
 
@@ -38,7 +23,7 @@ int main()
     int j = 0;
     int money = 300;
     pthread_mutex_init(&lock, NULL); //创建锁
-    pthread_attr_getdetachstate();
+    //pthread_attr_getdetachstate();
     // pthread_cancel()
     pthread_create(&pth, NULL, (void *)twothread, (void *)&money);
 

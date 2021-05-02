@@ -16,6 +16,7 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <pthread.h>
+#include <sys/epoll.h>
 
 #ifdef DEBUGPRINT
 #define DEBUGPRINT(format, ...)                                        \
@@ -25,7 +26,6 @@
 #else
 #define DEBUGPRINT(format, ...)
 #endif
-
 
 #if defined MYERROR || defined PRINTEXIT
 #define PRINTEXIT(format, ...)                                                 \

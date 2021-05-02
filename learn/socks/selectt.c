@@ -12,6 +12,7 @@ int main()
     //端口复用
     int op = 1;
     setsockopt(lfd, SOL_SOCKET, SO_REUSEPORT, (void *)&op, sizeof(op));
+   
     bind(lfd, (struct sockaddr *)&lisaddr, sizeof(lisaddr));
     listen(lfd, 128);
     fd_set rset;

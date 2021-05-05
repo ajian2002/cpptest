@@ -2,12 +2,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-listnode *sinlinnklist_headinsert(listnode *link, Item *data)
+listnode *sinlinklist_creatlink(Item *data)
+{
+    listnode *frist = (listnode *)malloc(sizeof(listnode));
+
+    if (frist == NULL)
+    {
+        perror("creat failed\n");
+        exit(-1);
+    }
+
+    frist->next = NULL;
+    frist->item = data;
+    return frist;
+}
+
+listnode *sinlinklist_headinsert(listnode *link, Item *data)
 {
     listnode *current;
     current = (listnode *)malloc(sizeof(listnode));
     if (current == NULL)
-        return 0;
+    {
+        perror("malloc failed");
+        exit(-1);
+    }
     else
     {
         current->next = link;
@@ -49,7 +67,7 @@ listnode *sinlinklist_pushlink(listnode *link, Item *data)
     }
 }
 
-listnode *sinlinnklist_insertnnode(listnode *link, int where, Item *data)
+listnode *sinlinklist_insertnnode(listnode *link, int where, Item *data)
 {
     listnode *current = NULL;
     current = (listnode *)malloc(sizeof(listnode));
@@ -98,7 +116,7 @@ listnode *sinlinnklist_insertnnode(listnode *link, int where, Item *data)
     return link;
 }
 
-listnode *sinlinnklist_headdel(listnode *link)
+listnode *sinlinklist_headdel(listnode *link)
 {
     listnode *temp = link;
     if (link->next)
@@ -197,21 +215,6 @@ listnode *sinlinklist_delnnode(listnode *link, int where)
         free(tt);
     }
     return link;
-}
-
-listnode *sinlinklist_creatlink(Item *data)
-{
-    listnode *frist = (listnode *)malloc(sizeof(listnode));
-
-    if (frist == NULL)
-    {
-        perror("creat failed\n");
-        exit(-1);
-    }
-
-    frist->next = NULL;
-    frist->item = data;
-    return frist;
 }
 
 void sinlinklist_delonlylink(listnode *link)

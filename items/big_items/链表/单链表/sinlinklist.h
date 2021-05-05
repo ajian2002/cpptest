@@ -23,18 +23,18 @@ typedef struct ListNode listnode;
 listnode *sinlinklist_creatlink(Item *data);
 
 // 头插
-listnode *sinlinnklist_headinsert(listnode *link, Item *data);
+listnode *sinlinklist_headinsert(listnode *link, Item *data);
 
 //尾插
 listnode *sinlinklist_pushlink(listnode *link, Item *data);
 
 // 插入n点
-listnode*sinlinnklist_insertnnode(listnode*link, int where, Item* data);
+listnode*sinlinklist_insertnnode(listnode*link, int where, Item* data);
 
 //--------------------删 5
 
 //头删
-listnode *sinlinnklist_headdel(listnode *link);
+listnode *sinlinklist_headdel(listnode *link);
 
 //尾删
 listnode *sinlinklist_poplink(listnode *link);

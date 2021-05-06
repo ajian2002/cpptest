@@ -2,53 +2,69 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-listnode *sinlinklist_creatlink(Item *data)
+linklist *sinlinklist_creatlink(Item *data)
 {
     listnode *frist = (listnode *)malloc(sizeof(listnode));
-
-    if (frist == NULL)
+    linklist *link = (linklist *)malloc(sizeof(linklist));
+    if (frist == NULL || link == NULL)
     {
         perror("creat failed\n");
         exit(-1);
     }
-
     frist->next = NULL;
     frist->item = data;
-    return frist;
+    link->head = frist;
+    link->length = 1;
+
+    return link;
 }
 
-listnode *sinlinklist_headinsert(listnode *link, Item *data)
+linklist *sinlinklist_headinsert(linklist *llink, Item *data)
 {
-    listnode *current;
-    current = (listnode *)malloc(sizeof(listnode));
+
+    if (llink == NULL)
+    {
+        perror("link not found");
+        return llink;
+    }
+    listnode *link = llink->head;
+    listnode *current = (listnode *)malloc(sizeof(listnode));
     if (current == NULL)
     {
         perror("malloc failed");
-        exit(-1);
+        return llink;
     }
-    else
-    {
-        current->next = link;
-        current->item = data;
-        return current;
-        //struct Node ;
-    }
+
+    current->next = link;
+    current->item = data;
+    link = current;
+
+    //struct Node ;
+    llink->head = link;
+    llink->length++;
+    return llink;
 }
 
-listnode *sinlinklist_pushlink(listnode *link, Item *data)
+linklist *sinlinklist_pushlink(linklist *llink, Item *data)
 {
+    if (llink == NULL)
+    {
+        perror("link not found");
+        return llink;
+    }
+    listnode *link = llink->head;
     listnode *temp = (listnode *)malloc(sizeof(listnode));
     if (temp == NULL)
     {
         perror("malloc error");
-        exit(-1);
+        return llink;
     }
-    if (link == NULL) //空头节点?
+    if (link == NULL || llink->length == 0) //空头节点?
     {
+        llink->length = 0;
         link = temp;
         link->item = data;
         link->next = NULL;
-        return link;
     }
     else //找到末尾
     {
@@ -61,83 +77,110 @@ listnode *sinlinklist_pushlink(listnode *link, Item *data)
         {
             find = find->next;
         }
-
         find->next = temp;
-        return link;
     }
+    llink->head = link;
+    llink->length++;
+    return llink;
 }
 
-listnode *sinlinklist_insertnnode(listnode *link, int where, Item *data)
+linklist *sinlinklist_insertnnode(linklist *llink, int where, Item *data)
 {
-    listnode *current = NULL;
-    current = (listnode *)malloc(sizeof(listnode));
-    if (current == NULL)
+    if (llink == NULL)
     {
-        perror("malloc failed");
-        exit(-1);
+        perror("link not found");
+        return llink;
     }
-    current->item = data;
-    current->next = NULL;
-    listnode *tailInsert = link;
+    listnode *link = llink->head;
 
-    if (current == NULL || data == NULL || where < 1)
+    if (where < 1 || where > llink->length + 1)
     {
-        printf("invaild args\n");
-        return link;
+        perror("invaild args");
+        return llink;
     }
+    else if (where == 1)
+        return sinlinklist_headinsert(llink, data);
+    else if (where == llink->length + 1)
+        return sinlinklist_pushlink(llink, data);
     else
     {
-        if (where == 1)
+        listnode *current = (listnode *)malloc(sizeof(listnode));
+        if (current == NULL)
         {
-            current->next = link;
-            return current;
+            perror("malloc failed");
+            return llink;
         }
-        else
-        {
 
-            for (int i = 2; i < where; i++)
+        listnode *tailInsert = link;
+        current->item = data;
+        current->next = NULL;
+
+        for (int i = 2; i < where; i++)
+        {
+            if (tailInsert && tailInsert->next)
             {
-                if (tailInsert)
-                {
-                    tailInsert = tailInsert->next;
-                }
-                else
-                {
-                    printf("insternnode error");
-                    exit(-1);
-                }
+                tailInsert = tailInsert->next;
             }
-
-            current->next = tailInsert->next;
-            tailInsert->next = current;
-            return link;
+            else
+            {
+                perror("insternnode error");
+                free(current);
+                return llink;
+            }
         }
+
+        current->next = tailInsert->next;
+        tailInsert->next = current;
+        llink->length++;
     }
-    return link;
+    return llink;
 }
 
-listnode *sinlinklist_headdel(listnode *link)
+linklist *sinlinklist_headdel(linklist *llink)
 {
+    if (llink == NULL)
+    {
+        perror("link not found");
+        return llink;
+    }
+    listnode *link = llink->head;
     listnode *temp = link;
-    if (link->next)
+    if (link && llink->length > 0)
     {
         link = link->next;
         free(temp);
-        return link;
+        llink->length--;
+        llink->head = link;
     }
     else
     {
-        return NULL;
+        perror("del error");
     }
+    return llink;
 }
 
-listnode *sinlinklist_poplink(listnode *link)
+linklist *sinlinklist_poplink(linklist *llink)
 {
+    if (llink == NULL)
+    {
+        perror("link not found");
+        return llink;
+    }
+    listnode *link = llink->head;
+
     listnode *temp = link;
-    if (temp == NULL || temp->next == NULL)
+    if (temp == NULL || llink->length == 0)
     {
         perror("popnode error");
-        exit(-1);
+        return llink;
+    }
+    else if (llink->length == 1 || link->next == NULL)
+    {
+        if (link)
+            free(link);
+        llink->head = NULL;
+        llink->length = 0;
+        return llink;
     }
     while (temp->next->next != NULL)
     {
@@ -145,80 +188,67 @@ listnode *sinlinklist_poplink(listnode *link)
     }
     free(temp->next);
     temp->next = NULL;
-    return link;
+    llink->length--;
+    return llink;
 }
 
-Item *sinlinklist_getnitem(listnode *link, int where)
-{
-    listnode *temp = link;
-    for (int i = 1; i < where; i++)
-    {
-        // printf("1\n");
-        if (temp)
-        {
-            temp = temp->next;
-        }
-        else
-        {
-            perror("getitem error\n");
-            exit(-1);
-        }
-    }
-    if (temp && temp->item)
-        return (temp->item);
-    else
-    {
-        perror("getitem error");
-        exit(-1);
-    }
-}
-
-listnode *sinlinklist_delnnode(listnode *link, int where)
+linklist *sinlinklist_delnnode(linklist *llink, int where)
 {
 
-    listnode *temp = link;
-    if (temp == NULL || temp->next == NULL)
+    if (llink == NULL)
     {
-        perror("deldata error");
-        exit(-1);
+        perror("link not found");
+        return llink;
     }
-
-    if (where == 1)
+    listnode *link = llink->head;
+    if (where < 1 || where > llink->length + 1)
     {
-        temp = link->next;
-        free(link);
-        return temp;
+        perror("invaild args");
+        return llink;
     }
+    else if (where == 1)
+        return sinlinklist_headdel(llink);
+    else if (where == llink->length + 1)
+        return sinlinklist_poplink(llink);
     else
     {
+        listnode *temp = link;
         for (int i = 2; i < where; i++)
         {
-            if (temp)
+            if (temp && temp->next)
             {
                 temp = temp->next;
             }
             else
             {
                 printf("delnode error");
-                exit(-1);
+                return llink;
             }
         }
 
         listnode *tt;
         tt = temp->next;
-        if (tt == NULL)
-        {
-            perror("delnode error");
-            exit(-1);
-        }
+        //不太可能
+        // if (tt == NULL)
+        // {
+        //     perror("delnode error");
+        //     return llink;
+        // }
         temp->next = temp->next->next;
         free(tt);
+        llink->length--;
     }
-    return link;
+    return llink;
 }
 
-void sinlinklist_delonlylink(listnode *link)
+int sinlinklist_delonlylink(linklist *llink)
 {
+    if (llink == NULL)
+    {
+        perror("link not found");
+        return 0;
+    }
+    listnode *link = llink->head;
     while (link)
     {
         listnode *temp = link;
@@ -227,15 +257,31 @@ void sinlinklist_delonlylink(listnode *link)
         else
         {
             free(link);
-            return;
+            llink->length--;
+            break;
         }
         free(temp);
+        llink->length--;
     }
-    free(link);
+    if (llink->length == 0)
+    {
+        llink->head = NULL;
+        return 0;
+    }
+    else
+    {
+        return -1;
+    }
 }
 
-void sinlinklist_delalllink(listnode *link)
+int sinlinklist_delalllink(linklist *llink)
 {
+    if (llink == NULL)
+    {
+        perror("link not found");
+        return -1;
+    }
+    listnode *link = llink->head;
     while (link && link->item)
     {
         listnode *temp = link;
@@ -243,22 +289,43 @@ void sinlinklist_delalllink(listnode *link)
             link = link->next;
         else
         {
-            free(link->item);
-            free(link);
-            return;
+            if (link->item)
+                free(link->item);
+            if (link)
+                free(link);
+            llink->length--;
+            break;
         }
-        free(temp->item);
-        free(temp);
+        if (temp->item)
+            free(temp->item);
+        if (temp)
+            free(temp);
+        llink->length--;
     }
-    free(link->item);
-    free(link);
+    if (llink->length == 0)
+    {
+        llink->head = NULL;
+        return 0;
+    }
+    else
+        return -1;
 }
 
-listnode *sinlinklist_reslink8(listnode *link)
+/*
+
+ TODO:reslink
+
+linklist *sinlinklist_reslink8(linklist *llink)
 {
+    if (llink == NULL)
+    {
+        perror("link not found");
+        return -1;
+    }
+    listnode *link = llink->head;
     if (!link || !link->next)
     {
-        return link;
+        return llink;
     }
     listnode *temp = sinlinklist_reslink8(link->next); //temp是最后一项的指针
     link->next->next = link;
@@ -266,8 +333,14 @@ listnode *sinlinklist_reslink8(listnode *link)
     return temp;
 }
 
-listnode *sinlinklist_reslink(listnode *link)
+linklist *sinlinklist_reslink(linklist *llink)
 {
+    if (llink == NULL)
+    {
+        perror("link not found");
+        return -1;
+    }
+    listnode *link = llink->head;
     if (!link || !link->next)
         return link;
     else
@@ -286,42 +359,79 @@ listnode *sinlinklist_reslink(listnode *link)
         return link;
     }
 }
-
-int sinlinklist_getlenlink(listnode *link)
+*/
+Item *sinlinklist_getnitem(linklist *llink, int where)
 {
-    int count = 0;
-    while (link)
+
+    if (llink == NULL || llink->length == 0 || llink->head == NULL)
     {
-        count++;
-        link = link->next;
+        perror("link not found");
+        return NULL;
     }
-    return count;
-}
+    listnode *link = llink->head;
 
-listnode *sinlinklist_setnitem(listnode *link, int where, Item *data)
-{
     listnode *temp = link;
+    if (where < 1 || where > llink->length)
+    {
+        perror("node not found");
+        return NULL;
+    }
     for (int i = 1; i < where; i++)
     {
         // printf("1\n");
-        if (temp)
+        if (temp && temp->next)
         {
             temp = temp->next;
         }
         else
         {
             perror("getitem error\n");
-            exit(-1);
+            return NULL;
         }
     }
-    if (temp && temp->item)
+    return temp->item;
+}
+
+// int sinlinklist_getlenlink(linklist *llink)
+// {
+//     int count = 0;
+//     while (link)
+//     {
+//         count++;
+//         link = link->next;
+//     }
+//     return count;
+// }
+
+linklist *sinlinklist_setnitem(linklist *llink, int where, Item *data)
+{
+    if (llink == NULL)
     {
-        temp->item = data;
-        return link;
+        perror("link not found");
+        return llink;
     }
-    else
+    listnode *link = llink->head;
+
+    listnode *temp = link;
+    if (where < 1 || where > llink->length)
     {
-        perror("getitem error");
-        exit(-1);
+        perror("node not found");
+        return NULL;
     }
+
+    for (int i = 1; i < where; i++)
+    {
+        // printf("1\n");
+        if (temp && temp->next)
+        {
+            temp = temp->next;
+        }
+        else
+        {
+            perror("getitem error\n");
+            return llink;
+        }
+    }
+    temp->item = data;
+    return llink;
 }

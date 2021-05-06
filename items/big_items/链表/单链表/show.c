@@ -3,7 +3,7 @@
 //递归和非递归反转单链表
 //获取长度为k单链表的中点（向下取整）的指针
 
-#include <my/sinlinklist.h>
+#include "sinlinklist.h"
 struct Date
 {
     int intdata;
@@ -12,13 +12,18 @@ struct Date
 #include <stdio.h>
 #include <string.h>
 //查看链表
-void seelink(listnode *link)
+void seelink(linklist *llink, int line)
 {
-    listnode *temp = link;
-    if (link == NULL)
+    printf("line:%d||  ", line);
+    if (llink == NULL || llink->head == NULL || llink->length == 0)
+    {
+        printf("\n");
         return;
-
+    }
+    listnode *link, *temp;
+    temp = link = llink->head;
     //listnode *temp = link;//有头
+
     do
     {
         printf("%d ", temp->item->intdata);
@@ -27,7 +32,7 @@ void seelink(listnode *link)
         else
             break;
     } while (temp);
-
+    printf(" ||%d ", llink->length);
     printf("\n");
 }
 
@@ -45,20 +50,26 @@ int main()
     {
         data[i].intdata = i;
     }
-    listnode *head = sinlinklist_creatlink(&data[0]);
-    seelink(head);
-    //head = sinlinklist_pushlink(head, &data[1]);
-    //head = sinlinklist_pushlink(head, &data[2]);
+    linklist *list1, *head;
+
+    head = list1 = sinlinklist_creatlink(&data[0]);
+    seelink(head, __LINE__);
+    // sinlinklist_poplink(head);
+    // seelink(head, __LINE__);
+    head = sinlinklist_headinsert(head, &data[1]);
+    seelink(head, __LINE__);
+    head = sinlinklist_pushlink(head, &data[2]);
     head = sinlinklist_pushlink(head, &data[3]);
-    //seelink(head);
-    //head = sinlinklist_poplink(head);
-    seelink(head);
-    Item *s = sinlinklist_getnitem(head, 1);
-    printf("%d\n", s->intdata);
-    printf("%d\n", sinlinklist_getlenlink(head));
-    head = sinlinklist_reslink(head);
-    seelink(head);
-    head = sinlinnklist_headinsert(head, &data[6]);
-    seelink(head);
+    seelink(head, __LINE__);
+    head = sinlinklist_poplink(head);
+    seelink(head, __LINE__);
+    // Item *s = sinlinklist_getnitem(head, 1);
+    // printf("%d\n", s->intdata);
+    // printf("%d\n", sinlinklist_getlenlink(head));
+    // //head = sinlinklist_reslink(head);
+    //seelink(head, __LINE__);
+    // head = sinlinklist_headinsert(head, &data[6]);
+    //seelink(head, __LINE__);
     sinlinklist_delonlylink(head);
+    seelink(head, __LINE__);
 }

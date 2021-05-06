@@ -1,6 +1,9 @@
 #define PRINTEXIT
 #define DEBUGPRINT
 #include "mypool.h"
+/*TODO
+自行完成
+*/
 
 ThreadPool *pool_create(int min_thread_count, int max_thread_count, int queue_size_max)
 {
@@ -174,6 +177,55 @@ void *management_task(void *ppool)
 {
 
     ThreadPool *pool = (ThreadPool *)ppool;
+    while (pool->if_shall_shutdown == 0)
+    {
+        sleep(10);
+        pthread_mutex_lock(&pool->whole_mutex);
+        int queue_size = pool->queue_size;
+        int live_thread_count = pool->live_thread_count;
+        pthread_mutex_unlock(&pool->whole_mutex);
+
+        pthread_mutex_lock(&pool->busy_thread_number_mutex);
+        int busy_thread_count = pool->busy_thread_count;
+        pthread_mutex_unlock(&pool->busy_thread_number_mutex);
+
+        /* 创建新线程 算法： 任务数大于最小线程池个数, 且存活的线程数少于最大线程个数时 如：30>=10 && 40<100*/
+        int i;
+        if (queue_size >= MIN_WAIT_TASK_NUM && live_thread_count < pool->max_thread_count)
+        {
+            pthread_mutex_lock(&(pool->whole_mutex));
+            int add = 0;
+
+            /*一次增加 DEFAULT_THREAD 个线程*/
+            for (i = 0; i < pool->max_thread_count && add < DEFAULT_THREAD_VARY && pool->live_thread_count < pool->max_thread_count; i++)
+            {
+                if (pool->ordinary_thread_ids[i] == 0 || !is_thread_alive(pool->ordinary_thread_ids[i]))
+                {
+                    pthread_create(&(pool->ordinary_thread_ids[i]), NULL, wait_task, (void *)pool);
+                    add++;
+                    pool->live_thread_count++;
+                }
+            }
+
+            pthread_mutex_unlock(&(pool->whole_mutex));
+        }
+
+        /* 销毁多余的空闲线程 算法：忙线程X2 小于 存活的线程数 且 存活的线程数 大于 最小线程数时*/
+        if ((busy_thread_count * 2) < live_thread_count && live_thread_count > pool->min_thread_count)
+        {
+
+            /* 一次销毁DEFAULT_THREAD个线程, 隨機10個即可 */
+            pthread_mutex_lock(&(pool->whole_mutex));
+            pool->wait_exit_thread_count = DEFAULT_THREAD_VARY; /* 要销毁的线程数 设置为10 */
+            pthread_mutex_unlock(&(pool->whole_mutex));
+
+            for (i = 0; i < DEFAULT_THREAD_VARY; i++)
+            {
+                /* 通知处在空闲状态的线程, 他们会自行终止*/
+                pthread_cond_signal(&(pool->queue_notempty_cond));
+            }
+        }
+    }
 }
 
 void process(ThreadPool *pool, void *data)

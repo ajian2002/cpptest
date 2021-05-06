@@ -241,6 +241,7 @@ linklist *sinlinklist_delnnode(linklist *llink, int where)
     return llink;
 }
 
+
 int sinlinklist_delonlylink(linklist *llink)
 {
     if (llink == NULL)

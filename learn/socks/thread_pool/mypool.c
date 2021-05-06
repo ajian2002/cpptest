@@ -1,5 +1,6 @@
 #define PRINTEXIT
 #define DEBUGPRINT
+
 #include "mypool.h"
 /*TODO
 自行完成
@@ -90,16 +91,21 @@ ThreadPool *pool_create(int min_thread_count, int max_thread_count, int queue_si
     // pthread_attr_t detached_thread_attr;
     // pthread_attr_init(&detached_thread_attr);
     // pthread_attr_setdetachstate(&detached_thread_attr, PTHREAD_CREATE_DETACHED);
-
+    pthread_mutex_lock(&pool->whole_mutex);
+    pthread_mutex_lock(&pool->busy_thread_number_mutex);
     for (int i = 0; i < min_thread_count; i++)
     {
-        pthread_create(&pool->ordinary_thread_ids[i], NULL, wait_task, (void *)&pool);
+        pthread_create(&pool->ordinary_thread_ids[i], NULL, wait_task, (void *)pool);
         pool->live_thread_count++;
+        DEBUGPRINT("thread%d :%ld\n", i, pool->ordinary_thread_ids[i]);
     }
 
     //add adjust thread
-    pthread_create(&pool->management_thread_id, NULL, management_task, (void *)&pool);
+    pthread_create(&pool->management_thread_id, NULL, management_task, (void *)pool);
+    DEBUGPRINT("memanged:%ld\n", pool->management_thread_id);
 
+    pthread_mutex_unlock(&pool->busy_thread_number_mutex);
+    pthread_mutex_unlock(&pool->whole_mutex);
     return pool;
 }
 
@@ -109,9 +115,10 @@ void *wait_task(void *ppool)
     while (1)
     {
         pthread_mutex_lock(&pool->whole_mutex);
+       
         while (pool->if_shall_shutdown == 0 && pool->queue_size == 0)          //没有任务
             pthread_cond_wait(&pool->queue_notempty_cond, &pool->whole_mutex); //任务不空唤醒
-        if (pool->wait_exit_thread_count > 0)                                  //准备自尽
+        DEBUGPRINT("get lock\n"); if (pool->wait_exit_thread_count > 0)                                  //准备自尽
         {
             pool->wait_exit_thread_count--;
             if (pool->live_thread_count > pool->min_thread_count)
@@ -123,6 +130,7 @@ void *wait_task(void *ppool)
         }
         if (pool->if_shall_shutdown == 1)
         {
+            DEBUGPRINT("pid:%ld exit beause shutdown\n", pthread_self());
             pthread_mutex_unlock(&pool->whole_mutex);
             pthread_exit(NULL); //线程自退出
         }
@@ -130,6 +138,7 @@ void *wait_task(void *ppool)
         //开始干活
         //出任务队列，加忙状态，执行回调，减忙状态
 
+        DEBUGPRINT("pid:%ld weak up\n", pthread_self());
         Tasks_t task;
         task.function = pool->task_queue[pool->queue_front].function;
         task.arg = pool->task_queue[pool->queue_front].arg;
@@ -143,6 +152,7 @@ void *wait_task(void *ppool)
         pool->busy_thread_count++;
         pthread_mutex_unlock(&pool->busy_thread_number_mutex);
 
+        DEBUGPRINT("pid:%ld do process\n", pthread_self());
         //执行回调
         task.function(task.arg);
 
@@ -173,12 +183,23 @@ void add_task(ThreadPool *pool, void *(*function)(void *arg), void *arg)
     pthread_mutex_unlock(&pool->whole_mutex);
 }
 
+int is_thread_alive(pthread_t tid)
+{
+    int kill_rc = pthread_kill(tid, 0); //发0号信号，测试线程是否存活
+    if (kill_rc == ESRCH)
+    {
+        return false;
+    }
+    return true;
+}
+
 void *management_task(void *ppool)
 {
 
     ThreadPool *pool = (ThreadPool *)ppool;
     while (pool->if_shall_shutdown == 0)
     {
+        DEBUGPRINT("mang weak up\n");
         sleep(10);
         pthread_mutex_lock(&pool->whole_mutex);
         int queue_size = pool->queue_size;
@@ -226,13 +247,15 @@ void *management_task(void *ppool)
             }
         }
     }
+    return NULL;
 }
 
-void process(ThreadPool *pool, void *data)
+void *process(void *data)
 {
-    char c = *(char *)data;
-    printf("pid=%d,data=%c\n", pthread_self(), c);
-    sleep(3);
+    int c = *(int *)data;
+    printf("pid=%ld,data=%d\n", pthread_self(), c);
+    //sleep(1);
+    return NULL;
 }
 
 void pool_destroy(ThreadPool *pool)

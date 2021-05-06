@@ -2,8 +2,7 @@
 #define DEBUGPRINT
 
 #include "mypool.h"
-/*TODO
-自行完成
+/*TODO自行完成线程池
 */
 
 ThreadPool *pool_create(int min_thread_count, int max_thread_count, int queue_size_max)

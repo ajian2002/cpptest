@@ -16,6 +16,8 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <pthread.h>
+#include <sys/un.h>
+#include <stddef.h>
 #include <sys/epoll.h>
 
 #ifdef DEBUGPRINT

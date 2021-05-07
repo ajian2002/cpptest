@@ -23,6 +23,9 @@
 #include <stddef.h>
 #include <sys/epoll.h>
 #include <mysql/mysql.h>
+#include <cjson/cJSON.h>
+
+
 
 #ifdef DEBUGPRINT
 #define DEBUGPRINT(format, ...)                                        \

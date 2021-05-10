@@ -3,6 +3,7 @@ extern int epfd;
 extern bool PRINTEXIT;
 extern bool DEBUGPRINT;
 extern bool WRITE_LOG;
+extern char serverlogpath[30];
 void epoll_add(int event, events *ev)
 {
     struct epoll_event temp = {0, {0}};
@@ -17,7 +18,7 @@ void epoll_add(int event, events *ev)
 
     if (epoll_ctl(epfd, op, ev->fd, &temp) < 0)
     {
-        DEBUGPRINT("event add error");
+         LOG(serverlogpath,"event add error");
     }
     return;
 }

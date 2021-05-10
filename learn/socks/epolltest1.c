@@ -2,8 +2,18 @@
 #include <my/debug.info.h>
 #include <sys/epoll.h>
 #define PORT 5678
-int main()
+// int epfd;
+/*
+端口复用epolltest1(多线程（epfd，lfd））
+//???
+//
+//1   2   3   4
+//a   b   d
+//    c
+*/
+void *doa(void *a)
 {
+    char *black = (char *)a;
     //创建监听套接字
     int lfd;
     lfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -30,14 +40,16 @@ int main()
 
     struct epoll_event outevents[1024];
     int cfd;
+    pid_t thread[3];
     while (1)
     {
+
         int number = epoll_wait(epfd, outevents, 1024, -1); //（）监听
         //-1 阻塞 0 不阻塞 +毫秒
         //return 个数 ，循环上限
         if (number < 0)
             PRINTEXIT("epollwait");
-
+        printf("%s wakeup %ld\n", black, pthread_self() % 1000);
         //有事件
         for (int i = 0; i < number; i++)
         {
@@ -45,16 +57,16 @@ int main()
             if (outevents[i].data.fd == lfd) //lfd
             {
                 cfd = accept(lfd, (struct sockaddr *)&addr, &socklen); //传入传出
-
+                printf("%s accept %ld \n", black, pthread_self() % 1000);
                 //设置cfd不阻塞
-                int flag = fcntl(cfd, F_GETFL);
-                flag |= O_NONBLOCK;
-                fcntl(cfd, F_SETFL, flag);
+                // int flag = fcntl(cfd, F_GETFL);
+                // flag |= O_NONBLOCK;
+                // fcntl(cfd, F_SETFL, flag);
 
                 //挂到epfd
-                event.events = EPOLLIN | EPOLLET; //ET模式
-                //event.events=EPOLLIN;//LT模式
-                event.data.fd = cfd; //可以void*
+                //event.events = EPOLLIN | EPOLLET; //ET模式
+                event.events = EPOLLIN; //LT模式
+                event.data.fd = cfd;    //可以void*
                 epoll_ctl(epfd, EPOLL_CTL_ADD, cfd, &event);
 
                 continue;
@@ -63,7 +75,9 @@ int main()
             {
                 char buf[50];
                 cfd = outevents[i].data.fd;
+                printf("%sIN  %ld\n", black, pthread_self() % 1000);
                 int len = read(cfd, buf, 50);
+
                 if (len == 0)
                 {
                     epoll_ctl(epfd, EPOLL_CTL_DEL, cfd, NULL);
@@ -90,5 +104,25 @@ int main()
     }
     close(lfd);
     close(epfd);
+}
+int main()
+{
+    pthread_t thread[4];
+    char **a = (char **)malloc(sizeof(char *) * 4);
+
+    for (int i = 0; i < 4; i++)
+    {
+        a[i] = (char *)malloc(sizeof(char) * 5);
+        memset(a[i], 0, sizeof(char) * 5);
+        for (int j = 0; j < i; j++)
+            strcpy(a[i], " ");
+        pthread_create(&thread[i], NULL, doa, (void *)a[i]);
+    }
+    while (1)
+        ;
+
+    for (int i = 0; i < 4; i++)
+        free(a[i]);
+    free(a);
     return 0;
 }

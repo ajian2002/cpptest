@@ -20,15 +20,16 @@ int epoll_init_lfd(void)
 
     //端口复用
     int op = 1;
-    setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, &op, sizeof(op));
+    //TCP不支持多播
+    // setsockopt(lfd, SOL_SOCKET, SO_REUSEADDR, &op, sizeof(op));
     setsockopt(lfd, SOL_SOCKET, SO_REUSEPORT, &op, sizeof(op));
 
     bind(lfd, (struct sockaddr *)&serveraddr, sizeof(serveraddr));
     listen(lfd, MAXCLIENT);
 
     /*不考虑多线程*/
-    epoll_set(&g_events[MAXCLIENT], lfd, lfdaccept, &g_events[MAXCLIENT]);//设置回调
-    epoll_add(EPOLLIN, &g_events[MAXCLIENT]); //ev->fd
+    epoll_set(&g_events[MAXCLIENT], lfd, lfdaccept, &g_events[MAXCLIENT]); //设置回调
+    epoll_add(EPOLLIN, &g_events[MAXCLIENT]);                              //ev->fd
 
     return lfd;
 }

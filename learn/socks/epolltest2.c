@@ -15,6 +15,7 @@ int epfd;
 void *doa(void *a)
 {
     char *black = (char *)a;
+    black = "";
     //创建监听套接字
     int lfd;
     lfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -38,7 +39,7 @@ void *doa(void *a)
     event.data.fd = lfd;                         //传出的fd
     epoll_ctl(epfd, EPOLL_CTL_ADD, lfd, &event); //挂节点，操作lfd->epfd
     //lfd挂到根节点epfd，带着event结构，事件
-
+    printf("lfd added\n");
     struct epoll_event outevents[1024];
     int cfd;
 
@@ -50,7 +51,7 @@ void *doa(void *a)
         //return 个数 ，循环上限
         if (number < 0)
             PRINTEXIT("epollwait");
-        printf("%s wakeup %ld\n", black, pthread_self() % 1000);
+        //printf("%s wakeup %ld\n", black, pthread_self() % 1000);
         //有事件
         for (int i = 0; i < number; i++)
         {
@@ -109,22 +110,18 @@ int main()
 {
     epfd = epoll_create(100);
     pthread_t thread[4];
-    char **a = (char **)malloc(sizeof(char *) * 4);
 
     for (int i = 0; i < 4; i++)
     {
-        a[i] = (char *)malloc(sizeof(char) * 5);
-        memset(a[i], 0, sizeof(char) * 5);
-        for (int j = 0; j < i; j++)
-            strcpy(a[i], " ");
-        pthread_create(&thread[i], NULL, doa, (void *)a[i]);
+
+        pthread_create(&thread[i], NULL, doa, NULL);
+        printf("tread%d[%d]\n", i, thread[i] % 1000);
+        sleep(3);
     }
+
     while (1)
         ;
 
-    for (int i = 0; i < 4; i++)
-        free(a[i]);
-    free(a);
     close(epfd);
     return 0;
 }

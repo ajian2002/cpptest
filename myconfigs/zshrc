@@ -1,5 +1,7 @@
-source ~/.bash_profile
+#source ~/.bash_profile
+
 export PATH=/home/ajian/.local/bin:$PATH
+export PATH=/home/ajian/.yarn/bin:$PATH
 
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
@@ -82,16 +84,13 @@ ZSH_THEME="ys"
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
 	git
-       	autojump 
+	autojump 
 	web-search 
 	zsh-autosuggestions 
 	sudo 
 	colored-man-pages 
 	zsh-syntax-highlighting
 	z
-	
-
-
 )
 
 [[ -s ~/.autojump/etc/profile.d/autojump.sh ]] && . ~/.autojump/etc/profile.d/autojump.sh
@@ -123,6 +122,7 @@ source $ZSH/oh-my-zsh.sh
 # For a full list of active aliases, run `alias`.
 #
 # Example aliases
+# alias vim='nvim'
 alias cls='clear'
 alias ll='ls -l'
 alias la='ls -a'
@@ -140,10 +140,11 @@ alias -s gz='tar -xzvf'
 alias -s tgz='tar -xzvf'
 alias -s zip='unzip'
 alias -s bz2='tar -xjvf'
-alias less='/usr/share/vim/vim81/macros/less.sh'
-alias cman='man -M /usr/share/man/zh_CN'
+#alias less='/usr/share/vim/vim81/macros/less.sh'
+alias cman='man -M /usr/local/zhman/share/man/zh_CN'
 alias px='~/.px.sh && proxychains4'
 alias co='code ~/work'
 alias h='history'
+alias dr='/usr/bin/docker'
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"

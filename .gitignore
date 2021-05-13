@@ -12,11 +12,14 @@ items/big_items/everyday/
 venv
 venv/*
 
-!makefile
+
 !/**/makefile
+!/**/Makefile
 
 /**/client
+!/**/client/
 /**/server
+!/**/server/
 /**/a.out
 package.json
 package-lock.json
@@ -26,3 +29,13 @@ yarn.lock
 /**/nohub.out
 !/**/vscode/*
 !/**/ssh/*
+!items/big_items/linuxc/chatroom/config.json
+!items/big_items/linuxc/chatroom/log/*.conf
+!items/big_items/linuxc/chatroom/.gitignore
+
+
+# items/big_items/linuxc/chatroom/a.out
+!/**/CMakeLists.txt
+!/**/Doxyfile
+# items/big_items/linuxc/chatroom/*
+!/**/*.hpp

@@ -1,35 +1,50 @@
 #include <stdio.h>
-
-int fib( int n )
+#include <stdlib.h>
+#include <string.h>
+void menu(void)
 {
-	if(n==1||n==2);
-		return 1;
-	return fib(n-1)+fib(n-2);
+	printf("1-Ball\n");
+	printf("2-Cylinder\n");
+	printf("3-Cone\n");
+	printf("other-Exit\n");
+	printf("Please enter your command:\n");
+	return;
 }
-void PrintFN( int m, int n )
+int main()
 {
-	int a[100];
-	int iff=0;
-	for(int i=1;i<100;i++)
-		a[i]=fib(i);
-	for(int i=1;i<=100;i++)
+	int m;
+	double r, v, h;
+	r = h = v = 0;
+	while (1)
 	{
-		if(a[i]<=n&&a[i]>=m)
+		menu();
+
+		v = 0;
+		scanf("%d", &m);
+		switch (m)
 		{
-			if(iff==0)
-			{
-				iff=1;
-				printf("%d",a[i]);
-			}
-			else
-			{
-				printf(" %d",a[i]);
-			}
-
+		case 1:
+			printf("Please enter the radius:\n");
+			scanf("%lf", &r);
+			//printf("%d %l \n", m, r);
+			v = 4 * 3.14159265 * r * r * r / 3.0;
+			printf("%.2lf\n", v);
+			break;
+		case 2:
+			printf("Please enter the radius and the height:\n");
+			scanf("%lf %lf", &r, &h);
+			v = 3.14159265 * r * r * h;
+			printf("%.2lf\n", v);
+			break;
+		case 3:
+			printf("Please enter the radius and the height:\n");
+			scanf("%lf %lf", &r, &h);
+			v = 3.14159265 * r * r * h / 3.0;
+			printf("%.2lf\n", v);
+			break;
+		default:
+			return 0;
 		}
-
 	}
-	if(iff==0)
-		printf("No Fibonacci number");
-		
+	return 0;
 }

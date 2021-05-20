@@ -1,17 +1,6 @@
 call plug#begin('~/.vim/plugged')
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 call plug#end()
-let g:coc_disable_startup_warning = 1
-
-" 十字光标
-:set cursorline cursorcolumn
-
-
-" 解决报错（无法打开交换文件）
- set directory=.,$TEMP
-
-" 解决插入模式下delete/backspce键失效问题
-set backspace=2
 
 "状态栏
 set laststatus=2
@@ -22,7 +11,7 @@ if version >= 603
 	        set encoding=utf-8
 	endif
 " 设置鼠标可用
-" set mouse=a
+set mouse=a
 " 显示行号
 set number
 " Tab 键的宽度
@@ -55,21 +44,22 @@ colorscheme elflord
 "设置主题配色
 
 " 系统剪贴板
-" set clipboard=unnamed
+set clipboard =unnamed
 
 " WSL yank support
-" let s:clip = '/mnt/c/Windows/System32/clip.exe'  " change this path according to your mount point
-"if executable(s:clip)
- "   augroup WSLYank
-  "      autocmd!
-   "     autocmd TextYankPost * if v:event.operator ==# 'y' | call system(s:clip, @0) | endif
-   " augroup END
-" endif
+let s:clip = '/mnt/c/Windows/System32/clip.exe'  " change this path according to your mount point
+if executable(s:clip)
+    augroup WSLYank
+        autocmd!
+        autocmd TextYankPost * if v:event.operator ==# 'y' | call system(s:clip, @0) | endif
+    augroup END
+endif
 
 
 
 "set paste
 set pastetoggle=<F9>
+
 
 
 
